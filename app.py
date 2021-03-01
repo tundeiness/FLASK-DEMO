@@ -16,6 +16,11 @@ class  BlogPost(db.Model):
     author = db.Columnn(db.String(20), nullable=False, default='N/A')
     date_posted = db.Columnn(db.DateTime, nullable=False, default=datetime.utcnow)
 
+    def __repr__(self):
+        return 'Blog post ' + str(self.id) 
+
+
+
 
 all_posts =[
     {
