@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 
 # create flask app
 app = Flask(__name__)
@@ -6,10 +6,8 @@ app = Flask(__name__)
 # define route
 @app.route('/')
 def index():
-    return '''
-    <h1>Home Page</h1>
-    <p>Welcome Home</p>
-    '''
+    return render_template('main.html')
+    # return Path('index.html').read_bytes();
 
 @app.route('/home/users/<string:name>/posts/<int:idx>')
 #code that will be run when the route is called
