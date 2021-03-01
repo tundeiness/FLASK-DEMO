@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 # create flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
@@ -8,6 +9,12 @@ db = SQLAlchemy(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
 
+class  BlogPost(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Columnn(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author = db.Columnn(db.String(20), nullable=False, default='N/A')
+    date_posted = db.Columnn(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
 all_posts =[
