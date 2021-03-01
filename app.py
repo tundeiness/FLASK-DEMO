@@ -63,6 +63,21 @@ def delete(id):
     db.session.commit()
     return redirect('/posts')
 
+
+
+@app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
+def edit(id):
+    if request.method == 'POST':
+        post = BlogPost.query.get_or_404(id)
+        post_title = request.form['title']
+        post_content = request.form['content']
+        post_author = request.form['author']
+        db.session.commit()
+        return redirect('/posts')
+    else:
+        return render_template('edit.html')
+
+
 @app.route('/home/users/<string:name>/posts/<int:idx>')
 #code that will be run when the route is called
 def greetings(name, idx):
