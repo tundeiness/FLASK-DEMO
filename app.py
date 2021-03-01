@@ -1,7 +1,13 @@
 from flask import Flask, render_template
-
+from flask_sqlalchemy import SQLAlchemy
 # create flask app
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+db = SQLAlchemy(app)
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
+
+
 
 
 all_posts =[
