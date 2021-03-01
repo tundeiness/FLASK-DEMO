@@ -22,17 +22,17 @@ class  BlogPost(db.Model):
 
 
 
-all_posts =[
-    {
-    'title': 'Post 1',
-    'content': 'This is the content of post 1',
-    'author':'Tunde'
-    },
-    {
-    'title': 'Post 2',
-    'content': 'This is the content of post too'
-    }
-]
+# all_posts =[
+#     {
+#     'title': 'Post 1',
+#     'content': 'This is the content of post 1',
+#     'author':'Tunde'
+#     },
+#     {
+#     'title': 'Post 2',
+#     'content': 'This is the content of post too'
+#     }
+# ]
 
 # define route
 @app.route('/')

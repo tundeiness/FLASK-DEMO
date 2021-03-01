@@ -18,12 +18,12 @@
     <h1>All Posts</h1>
     <hr>
     <h2>Create New Blog Post:</h2>
-    <form action='/post' method='POST'>
+    <form action='/posts' method='POST'>
         Title: <input type="text" name='title' id='title'>
         <br>
         Post: <input type="text" name='content' id='content'>
         <br>
-        <input type="submit" value='Posts'>
+        <input type="submit" value='Post'>
     </form>
     <hr>
     {% for post in posts %}
