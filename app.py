@@ -4,7 +4,13 @@ from flask import Flask
 app = Flask(__name__)
 
 # define route
-# @app.route('/')
+@app.route('/')
+def index():
+    return '''
+    <h1>Home Page</h1>
+    <p>Welcome Home</p>
+    '''
+
 @app.route('/home/users/<string:name>/posts/<int:idx>')
 #code that will be run when the route is called
 def greetings(name, idx):
