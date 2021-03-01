@@ -3,6 +3,17 @@
     <title>Posts</title>
 {% endblock %}
 
+<hr>
+    <h2>Create New Blog Post:</h2>
+    <form action='/post' method='POST'>
+        Title: <input type="text" name='title' id='title'>
+        <br>
+        Post: <input type="text" name='content' id='content'>
+        <br>
+        <input type="submit" value='Posts'>
+    </form>
+<hr>
+
 {% block body %}
     <h1>All Posts</h1>
     {% for post in posts %}
