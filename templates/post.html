@@ -23,16 +23,20 @@
         <br>
         Post: <input type="text" name='content' id='content'>
         <br>
+        Author: <input type="text" name='author' id='author'>
+        <br>
         <input type="submit" value='Post'>
     </form>
     <hr>
     {% for post in posts %}
         <h2>{{post.title}}</h2>
         {%if post.author%}
-            <h3>{{post.author}}</h3>
+            <h3>By:</h3><h3>{{post.author}}</h3>
         {%else%}
             <h3>Author unknown</h3>
         {%endif%}
         <p>{{post.content}}</p>
+        <a href="#">Delete</a>
+        <hr>
     {%endfor%}
 {% endblock %}

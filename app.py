@@ -4,11 +4,13 @@ from datetime import datetime
 # create flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+# create database
 db = SQLAlchemy(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
-
+  
+# Design the database
 class  BlogPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -45,7 +47,8 @@ def posts():
     if request.method == 'POST':
         post_title = request.form['title']
         post_content = request.form['content']
-        new_post = BlogPost(title=post_title, content=post_content, author='Tunde')
+        post_author = request.form['author']
+        new_post = BlogPost(title=post_title, content=post_content, author=post_author)
         db.session.add(new_post)
         db.session.commit()
         return redirect('/posts')
