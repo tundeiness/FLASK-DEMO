@@ -123,7 +123,7 @@ def brython_stdlib_js():
 
 @app.route('/static/img/vector-world-map.svg')
 def world_map():
-    return Path('static/img/vector-world-map.svg'), 200, [("Content-Type", 'image/svg')]
+    return Path('static/img/vector-world-map.svg').read_text(), 200, [("Content-Type", 'image/svg')]
     # return Path('static/img/vector-world-map.svg', mimetype='image/svg')
     
 
