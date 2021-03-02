@@ -74,8 +74,12 @@ def edit(id):
         post_title = request.form['title']
         post_content = request.form['content']
         post_author = request.form['author']
-        db.session.commit()
-        return redirect('/posts')
+
+        try:
+            db.session.commit()
+            return redirect('/posts')
+        except:
+            return "error editing post"
     else:
         return render_template('edit.html', post=post)
 
