@@ -112,14 +112,20 @@ def edit(id):
 
 @app.route('/static/js/brython.js')
 def brython_js():
-    return Path('static/js/brython.js').read_text(), "text/javascript"
-    # return Path('static/js/brython.js').read_text(), 200, [("Content-Type", "text/javascript")]
+    return Path('static/js/brython.js').read_text(), 200, [("Content-Type", "text/javascript")]
+    # return Path('static/js/brython.js').read_text(), "text/javascript"
 
 
 @app.route('/static/js/brython_stdlib.js')
 def brython_stdlib_js():
-    return Path('static/js/brython_stdlib.js').read_text(), "text/javascript"
-    # return Path('static/js/brython_stdlib.js').read_text(), 200, [("Content-Type", "text/javascript")]
+    return Path('static/js/brython_stdlib.js').read_text(), 200, [("Content-Type", "text/javascript")]
+    # return Path('static/js/brython_stdlib.js').read_text(), "text/javascript"
+
+@app.route('/static/img/vector-world-map.svg')
+def world_map():
+    return Path('static/img/vector-world-map.svg'), 200, [("Content-Type", 'image/svg')]
+    # return Path('static/img/vector-world-map.svg', mimetype='image/svg')
+    
 
 @app.route('/home/users/<string:name>/posts/<int:idx>')
 #code that will be run when the route is called
