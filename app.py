@@ -89,12 +89,12 @@ def delete(id):
     return redirect('/posts')
 
 
-@route('/static/js/brython.js')
+@app.route('/static/js/brython.js')
 def brython_js():
     return Path('brython.js').read_text()
 
 
-@route('/static/js/brython_stdlib.js')
+@app.route('/static/js/brython_stdlib.js')
 def brython_stdlib_js():
     return Path('brython_stdlib.js').read_text()
 
