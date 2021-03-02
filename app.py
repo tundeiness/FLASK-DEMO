@@ -1,7 +1,9 @@
+# import os
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from script import program
+from pathlib import Path
 # create flask app which refrences app.py
 app = Flask(__name__)
 # app = Flask(__name__, template_folder="templates")
@@ -11,6 +13,9 @@ db = SQLAlchemy(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
+# basedir = os.path.abspath(os.path.dirname(__file__))
+# brython_js = os.path.join(basedir, 'static/js/brython.js')
+# brython_stdlib_js = os.path.join(basedir, 'static/js/brython_stdlib.js')
   
 # Design the database
 class  BlogPost(db.Model):
@@ -84,6 +89,15 @@ def edit(id):
     else:
         return render_template('edit.html', post=post)
 
+
+@route('/static/js/brython.js')
+def brython_js():
+    return Path('brython.js').read_text()
+
+
+@route('/static/js/brython_stdlib.js')
+def brython_stdlib_js():
+    return Path('brython_stdlib.js').read_text()
 
 @app.route('/home/users/<string:name>/posts/<int:idx>')
 #code that will be run when the route is called
