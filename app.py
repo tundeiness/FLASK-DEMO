@@ -64,7 +64,7 @@ def posts():
         return render_template('post.html', posts=all_posts)
 
 
-@app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/posts/edit/<int:id>', methods=['GET', 'POST', 'DELETE'])
 def edit(id):
     post = BlogPost.query.get_or_404(id)
 
@@ -79,14 +79,19 @@ def edit(id):
         except:
             return "error editing post"
     else:
+        # post = BlogPost.query.get_or_404(id)
         return render_template('edit.html', post=post)
+
 
 @app.route('/posts/delete/<int:id>')
 def delete(id):
     post = BlogPost.query.get_or_404(id)
-    db.session.delete(post)
-    db.session.commit()
-    return redirect('/posts')
+    try:
+        db.session.delete(post)
+        db.session.commit()
+        return redirect('/posts')
+    except:
+        return "error deleting post"
 
 
 @app.route('/static/js/brython.js')
