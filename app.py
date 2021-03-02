@@ -113,11 +113,13 @@ def edit(id):
 @app.route('/static/js/brython.js')
 def brython_js():
     return Path('static/js/brython.js').read_text(), "text/javascript"
+    # return Path('static/js/brython.js').read_text(), 200, [("Content-Type", "text/javascript")]
 
 
 @app.route('/static/js/brython_stdlib.js')
 def brython_stdlib_js():
     return Path('static/js/brython_stdlib.js').read_text(), "text/javascript"
+    # return Path('static/js/brython_stdlib.js').read_text(), 200, [("Content-Type", "text/javascript")]
 
 @app.route('/home/users/<string:name>/posts/<int:idx>')
 #code that will be run when the route is called
