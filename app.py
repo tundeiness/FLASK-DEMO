@@ -78,20 +78,36 @@ def edit(id):
             return redirect('/posts')
         except:
             return "error editing post"
+    elif request.method == 'DELETE':
+        try:
+            db.session.delete(post)
+            db.session.commit()
+            return redirect('/posts')
+        except:
+            return "error deleting post"
     else:
         # post = BlogPost.query.get_or_404(id)
         return render_template('edit.html', post=post)
+# def delete(id):
+#     post = BlogPost.query.get_or_404(id)
+#     if request.method == 'DELETE':
+#         try:
+#             db.session.delete(post)
+#             db.session.commit()
+#             return redirect('/posts')
+#         except:
+#             return "error deleting post"
 
 
-@app.route('/posts/delete/<int:id>')
-def delete(id):
-    post = BlogPost.query.get_or_404(id)
-    try:
-        db.session.delete(post)
-        db.session.commit()
-        return redirect('/posts')
-    except:
-        return "error deleting post"
+# @app.route('/posts/delete/<int:id>')
+# def delete(id):
+#     post = BlogPost.query.get_or_404(id)
+#     try:
+#         db.session.delete(post)
+#         db.session.commit()
+#         return redirect('/posts')
+#     except:
+#         return "error deleting post"
 
 
 @app.route('/static/js/brython.js')
