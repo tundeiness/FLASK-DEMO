@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-# create flask app
+# create flask app which refrences app.py
 app = Flask(__name__)
+# app = Flask(__name__, template_folder="templates")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
 # create database
 db = SQLAlchemy(app)
@@ -68,6 +69,7 @@ def delete(id):
 @app.route('/posts/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
     post = BlogPost.query.get_or_404(id)
+
     if request.method == 'POST':
         post_title = request.form['title']
         post_content = request.form['content']
