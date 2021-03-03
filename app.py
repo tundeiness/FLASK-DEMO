@@ -55,7 +55,6 @@ travel_permits_schema = TravelPermitSchema(many=True, strict=True)
 
 
 
-
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
