@@ -5,11 +5,13 @@ from flask_marshmallow import Marshmallow
 from datetime import datetime
 from pathlib import Path
 
-# create flask app which refrences app.py
+# Initialise app
 app = Flask(__name__)
-
+basedir = os.path.abspath(os.path.dirname(__file__))
 # app = Flask(__name__, template_folder="templates")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+
+# Database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # initialise database
@@ -141,6 +143,6 @@ def greetings(name, idx):
 def getrequest():
     return 'you can get this using get request'
 
-# python best practices
+# Run Server
 if __name__ == '__main__':
     app.run(debug=True) 
