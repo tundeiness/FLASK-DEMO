@@ -162,6 +162,12 @@ def delete_travel_permit(id):
     return travel_permit_schema.jsonify(travel_permit)
 
 
+# Get Query 
+@app.route('/travel-permit/', methods=['GET'])
+def get_traveller_location():
+    return request.query_string
+
+
 # @app.route('/posts', methods=['GET', 'POST'])
 # def posts():
 #     if request.method == 'POST':
