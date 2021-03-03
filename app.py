@@ -1,11 +1,13 @@
-# import os
-from flask import Flask, render_template, request, redirect
+import os
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 from datetime import datetime
-from script import program
 from pathlib import Path
+
 # create flask app which refrences app.py
 app = Flask(__name__)
+
 # app = Flask(__name__, template_folder="templates")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
