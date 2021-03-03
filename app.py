@@ -5,6 +5,9 @@ from flask_marshmallow import Marshmallow
 from datetime import datetime
 from pathlib import Path
 from sqlalchemy_utils import IntRangeType
+from enum import Enum
+import sqlite3
+
 
 
 # Initialise app
@@ -22,6 +25,14 @@ db = SQLAlchemy(app)
 # Initialise marshmallow
 ma = Marshmallow(app)
 
+
+
+class RestrictionType(Enum):
+    zero = "Unknown"
+    one = "Required"
+    two = "Unrequired"
+
+
 # TravelPermit Class/Model
 class TravelPermit(db.Model):
     # __tablename__ = 'travelpermits'
@@ -31,6 +42,8 @@ class TravelPermit(db.Model):
     visa = db.Column(db.Integer, IntRangeType(step=2), nullable=False, default=0)
     quarantine = db.Column(db.Integer, IntRangeType(step=2), nullable=False, default=0)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    # db.Column(db.Enum(RestrictionType))
+    # value = db.Column(Enum(RestrictionType))
 
 # constructor
 def __init__(self, location, destination, visa, quarantine):
@@ -127,7 +140,7 @@ def get_travel_permits():
 
 @app.route('/travel-permit/<id>', methods=['GET'])
 def get_travel_permit(id):
-    travel_permit = TravelPermit.query.get(id)
+    travel_permit = TravelPermit.query.get_or_404(id)
     return travel_permit_schema.jsonify(travel_permit)
 
 
@@ -135,7 +148,7 @@ def get_travel_permit(id):
 
 @app.route('/travel-permit/<id>', methods=['PUT'])
 def update_travel_permit(id):
-    permit = TravelPermit.query.get(id)
+    permit = TravelPermit.query.get_or_404(id)
     if request.method == 'PUT':
         take_off_location = request.json['location']
         travel_destination = request.json['destination']
@@ -156,17 +169,70 @@ def update_travel_permit(id):
 
 @app.route('/travel-permit/<id>', methods=['DELETE'])
 def delete_travel_permit(id):
-    travel_permit = TravelPermit.query.get(id)
+    travel_permit = TravelPermit.query.get_or_404(id)
     db.session.delete(travel_permit)
     db.session.commit()
     return travel_permit_schema.jsonify(travel_permit)
 
 
 # Get Query 
-@app.route('/travel-permit/', methods=['GET'])
+@app.route('/travel_permit', methods=['GET'])
 def get_traveller_location():
-    return request.query_string
+        location = request.args.get('location')
+        if location:
+            conn = sqlite3.connect('db.sqlite')
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM travel_permit WHERE location=?", (location,))
+            result = cur.fetchall()
+            resp = jsonify(result)
+            resp.status_code = 200
+            return resp
+        else:
+            resp = jsonify('Traveller "location" not found in query string')
+            resp.status_code = 500
+            return resp
+        conn.commit()
+        conn.close()
 
+# def dict_factory(cursor, row):
+#     d = {}
+#     for idx, col in enumerate(cursor.description):
+#         d[col[0]] = row[idx]
+#     return d
+
+# # Get Query 
+# @app.route('/travel_permit', methods=['GET'])
+# def location_filter():
+#     query_parameters = request.args
+
+#     location = query_parameters.get('location')
+#     destination = query_parameters.get('destination')
+
+#     query = "SELECT * FROM TravelPermit WHERE"
+#     to_filter = []
+
+#     if location:
+#         query += ' location=? AND'
+#         to_filter.append(location)
+#     if destination:
+#         query += ' destination=? AND'
+#         to_filter.append(destination)
+#     if not (location or destination):
+#         return 'page not found'
+
+#     query = query[:-2] + ';'
+
+#     conn = sqlite3.connect('db.sqlite')
+#     conn.row_factory = dict_factory
+#     cur = conn.cursor()
+
+#     results = cur.execute(query, to_filter).fetchall()
+
+#     return jsonify(results)
+
+    # return jsonify(location)
+    # result = request.query_string
+    # return jsonify(result)
 
 # @app.route('/posts', methods=['GET', 'POST'])
 # def posts():
