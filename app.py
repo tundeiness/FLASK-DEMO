@@ -115,10 +115,51 @@ def add_travel_permit():
 # Get all permits
 
 @app.route('/travel-permit', methods=['GET'])
-def get_travel_permit():
+def get_travel_permits():
     all_permits = TravelPermit.query.all()
     result = travel_permits_schema.dump(all_permits)
-    return jsonify(result.data)
+    return jsonify(result)
+
+
+
+
+# Get Single permit
+
+@app.route('/travel-permit/<id>', methods=['GET'])
+def get_travel_permit(id):
+    travel_permit = TravelPermit.query.get(id)
+    return travel_permit_schema.jsonify(travel_permit)
+
+
+# Update a Permit
+
+@app.route('/travel-permit/<id>', methods=['PUT'])
+def update_travel_permit(id):
+    permit = TravelPermit.query.get(id)
+    if request.method == 'PUT':
+        take_off_location = request.json['location']
+        travel_destination = request.json['destination']
+        visa = request.json['visa']
+        quarantine = request.json['quarantine']
+
+        permit.location = take_off_location
+        permit.destination = travel_destination
+        permit.visa = visa
+        permit.quarantine = quarantine
+
+        db.session.commit()
+        return travel_permit_schema.jsonify(permit)
+
+
+
+# Get Delete permit
+
+@app.route('/travel-permit/<id>', methods=['DELETE'])
+def delete_travel_permit(id):
+    travel_permit = TravelPermit.query.get(id)
+    db.session.delete(travel_permit)
+    db.session.commit()
+    return travel_permit_schema.jsonify(travel_permit)
 
 
 # @app.route('/posts', methods=['GET', 'POST'])
