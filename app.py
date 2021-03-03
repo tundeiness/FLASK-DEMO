@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask,render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -38,6 +38,22 @@ def __init__(self, location, destination, visa, quarantine):
     self.destination = destination
     self.visa = visa
     self.quarantine = quarantine
+
+def __repr__(self):
+    return '<TravelPermit %r>' % self.location 
+
+
+# TravelPermit Schema
+
+class TravelPermitSchema(ma.Schema):
+    class Meta:
+        fileds = ('id','location','destination','vias','quarantine')
+
+# Initialise schema
+travel_permit_schema = TravelPermitSchema(strict=True)
+travel_permits_schema = TravelPermitSchema(many=True, strict=True)
+
+
 
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
@@ -80,45 +96,44 @@ def index():
     return render_template('main.html')
     # return Path('index.html').read_bytes();
  
-@app.route('/posts', methods=['GET', 'POST'])
-def posts():
-    if request.method == 'POST':
-        post_title = request.form['title']
-        post_content = request.form['content']
-        post_author = request.form['author']
-        new_post = BlogPost(title=post_title, content=post_content, author=post_author)
-        db.session.add(new_post)
-        db.session.commit()
-        return redirect('/posts')
-    else:
-        all_posts = BlogPost.query.order_by(BlogPost.date_posted).all()
-        return render_template('post.html', posts=all_posts)
+# @app.route('/posts', methods=['GET', 'POST'])
+# def posts():
+#     if request.method == 'POST':
+#         post_title = request.form['title']
+#         post_content = request.form['content']
+#         post_author = request.form['author']
+#         new_post = BlogPost(title=post_title, content=post_content, author=post_author)
+#         db.session.add(new_post)
+#         db.session.commit()
+#         return redirect('/posts')
+#     else:
+#         all_posts = BlogPost.query.order_by(BlogPost.date_posted).all()
+#         return render_template('post.html', posts=all_posts)
 
 
-@app.route('/posts/edit/<int:id>', methods=['GET', 'POST', 'DELETE'])
-def edit(id):
-    post = BlogPost.query.get_or_404(id)
+# @app.route('/posts/edit/<int:id>', methods=['GET', 'POST', 'DELETE'])
+# def edit(id):
+#     post = BlogPost.query.get_or_404(id)
 
-    if request.method == 'POST':
-        post_title = request.form['title']
-        post_content = request.form['content']
-        post_author = request.form['author']
+#     if request.method == 'POST':
+#         post_title = request.form['title']
+#         post_content = request.form['content']
+#         post_author = request.form['author']
 
-        try:
-            db.session.commit()
-            return redirect('/posts')
-        except:
-            return "error editing post"
-    elif request.method == 'DELETE':
-        try:
-            db.session.delete(post)
-            db.session.commit()
-            return redirect('/posts')
-        except:
-            return "error deleting post"
-    else:
-        # post = BlogPost.query.get_or_404(id)
-        return render_template('edit.html', post=post)
+#         try:
+#             db.session.commit()
+#             return redirect('/posts')
+#         except:
+#             return "error editing post"
+#     elif request.method == 'DELETE':
+#         try:
+#             db.session.delete(post)
+#             db.session.commit()
+#             return redirect('/posts')
+#         except:
+#             return "error deleting post"
+#     else:
+#         return render_template('edit.html', post=post)
 # def delete(id):
 #     post = BlogPost.query.get_or_404(id)
 #     if request.method == 'DELETE':
