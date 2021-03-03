@@ -47,7 +47,9 @@ def __repr__(self):
 
 class TravelPermitSchema(ma.Schema):
     class Meta:
-        fileds = ('id','location','destination','visa','quarantine')
+        fields = ('id','location','destination','visa','quarantine')
+        
+
 
 # Initialise schema
 travel_permit_schema = TravelPermitSchema()
@@ -94,7 +96,31 @@ travel_permits_schema = TravelPermitSchema(many=True)
 def index():
     return render_template('main.html')
     # return Path('index.html').read_bytes();
- 
+
+
+# Create a Permit
+
+@app.route('/travel-permit', methods=['POST'])
+def add_travel_permit():
+    if request.method == 'POST':
+        take_off_location = request.json['location']
+        travel_destination = request.json['destination']
+        visa = request.json['visa']
+        quarantine = request.json['quarantine']
+        new_travel_permit = TravelPermit(location=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine )
+        db.session.add(new_travel_permit)
+        db.session.commit()
+        return travel_permit_schema.jsonify(new_travel_permit)
+
+# Get all permits
+
+@app.route('/travel-permit', methods=['GET'])
+def get_travel_permit():
+    all_permits = TravelPermit.query.all()
+    result = travel_permits_schema.dump(all_permits)
+    return jsonify(result.data)
+
+
 # @app.route('/posts', methods=['GET', 'POST'])
 # def posts():
 #     if request.method == 'POST':
