@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
 from pathlib import Path
+from sqlalchemy_utils import IntRangeType
+
 
 # Initialise app
 app = Flask(__name__)
@@ -16,6 +18,28 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # initialise database
 db = SQLAlchemy(app)
+
+# Initialise marshmallow
+ma = Marshmallow(app)
+
+# TravelPermit Class/Model
+class TravelPermit(db.Model):
+    # __tablename__ = 'travelpermits'
+    id = db.Column(db.Integer, primary_key=True)
+    location = db.Column(db.String(128), nullable=False)
+    destination = db.Column(db.String(128), nullable=False)
+    visa = db.Column(db.Integer, IntRangeType(step=2), nullable=False, default=0)
+    quarantine = db.Column(db.Integer, IntRangeType(step=2), nullable=False, default=0)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+# constructor
+def __init__(self, location, destination, visa, quarantine):
+    self.location =  location
+    self.destination = destination
+    self.visa = visa
+    self.quarantine = quarantine
+
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
@@ -25,15 +49,15 @@ db = SQLAlchemy(app)
   
 # Design the database
 # BlogPost Class/Model
-class  BlogPost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    author = db.Column(db.String(20), nullable=False, default='N/A')
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+# class  BlogPost(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(100), nullable=False)
+#     content = db.Column(db.Text, nullable=False)
+#     author = db.Column(db.String(20), nullable=False, default='N/A')
+#     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    def __repr__(self):
-        return 'Blog post ' + str(self.id) 
+#     def __repr__(self):
+#         return 'Blog post ' + str(self.id) 
 
 
 
