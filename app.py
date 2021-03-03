@@ -47,11 +47,11 @@ def __repr__(self):
 
 class TravelPermitSchema(ma.Schema):
     class Meta:
-        fileds = ('id','location','destination','vias','quarantine')
+        fileds = ('id','location','destination','visa','quarantine')
 
 # Initialise schema
-travel_permit_schema = TravelPermitSchema(strict=True)
-travel_permits_schema = TravelPermitSchema(many=True, strict=True)
+travel_permit_schema = TravelPermitSchema()
+travel_permits_schema = TravelPermitSchema(many=True)
 
 
 
