@@ -20,6 +20,7 @@ db = SQLAlchemy(app)
 # brython_stdlib_js = os.path.join(basedir, 'static/js/brython_stdlib.js')
   
 # Design the database
+# BlogPost Class/Model
 class  BlogPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
