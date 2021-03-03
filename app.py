@@ -8,7 +8,9 @@ from pathlib import Path
 app = Flask(__name__)
 # app = Flask(__name__, template_folder="templates")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
-# create database
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# initialise database
 db = SQLAlchemy(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
