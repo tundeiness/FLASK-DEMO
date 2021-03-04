@@ -251,6 +251,8 @@ def get_traveller_location():
 # 	end_date text
 # );
 
+# create connection and create DB
+
 def create_connection(tour_db):
     """ create a database connection to the SQLite database
         specified by db_file
