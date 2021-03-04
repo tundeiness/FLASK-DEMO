@@ -4,8 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
 from pathlib import Path
+import sqlalchemy
 from sqlalchemy import create_engine
-from sqlalchemy_utils import IntRangeType
+from sqlalchemy_utils import IntRangeType, create_database, database_exists
 from enum import Enum
 import sqlite3
 from sqlite3 import Error
@@ -32,10 +33,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # mysql.init_app(app)
 
 
-# Create new Database
+username = 'sqlite'
+host = 'localhost'
+port = 5005
+DB_NAME = 'tour_db'
+
+# Create database
+# engine = create_engine('sqlite:////tmp/test.db', convert_unicode=True)
+# engine = create_engine(f"sqlite:///{username}:{password}@{host}:{port}")
+
+# tour_db = 'sqlite:///{0}:{1}@{2}:{3}'.format(username, password, host, port)
+tour_db = 'sqlite:///{0}@{1}:{2}'.format(username, host, port)
+if not database_exists(tour_db):
+    create_database(tour_db)
+
+# engine = sqlalchemy.create_engine('sqlite:///' + os.path.join(basedir, 'db2.sqlite') 
 # engine = create_engine('sqlite:///' + os.path.join(basedir, 'db2.sqlite'))
 # conn = engine.connect()
-# conn.execute()
+# conn.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
 # conn.close()
 
 # initialise database
@@ -199,6 +214,8 @@ def delete_travel_permit(id):
 def get_traveller_location():
         location = request.args.get('location')
         destination = request.args.get('destination')
+        # ex = TravelPermit.query.filter(TravelPermit.location == location)
+        # print(ex)
         if location:
             conn = sqlite3.connect('db.sqlite')
             cur = conn.cursor()
@@ -231,7 +248,7 @@ def get_traveller_location():
 # 	end_date text
 # );
 
-def create_connection(db_file):
+def create_connection(tour_db):
     """ create a database connection to the SQLite database
         specified by db_file
     :param db_file: database file
@@ -239,7 +256,7 @@ def create_connection(db_file):
     """
     conn = None
     try:
-        conn = sqlite3.connect(db_file)
+        conn = sqlite3.connect(tour_db)
         return conn
     except Error as e:
         print(e)
@@ -264,9 +281,9 @@ def create_table(conn, create_table_sql):
 
 def main():
     # database = r"C:\sqlite\db\pythonsqlite.db"
-    database = 'db.sqlite'
+    database = 'tour_db'
 
-    sql_create_permit_table = """ CREATE TABLE IF NOT EXISTS travel_permit (
+    sql_create_permit_table = """ CREATE TABLE IF NOT EXISTS permit (
                                         id integer PRIMARY KEY,
                                         home string NOT NULL,
                                         destination string NOT NULL,
