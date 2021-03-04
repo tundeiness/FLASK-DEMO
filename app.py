@@ -188,30 +188,38 @@ def get_traveller_location():
             resp = jsonify(result)
             resp.status_code = 200
             return resp
-        else:
-            resp = jsonify('Traveller "location" not found in query string')
-            resp.status_code = 500
-            return resp
-        conn.commit()
-        conn.close()
-
-
-@app.route('/travel_permit', methods=['GET'])
-def get_traveller_destination():
-        destination = request.args.get('destination')
-        if destination:
+        elif destination:
             conn = sqlite3.connect('db.sqlite')
             cur = conn.cursor()
             cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
             result = cur.fetchall()
             resp = jsonify(result)
             resp.status_code = 200
+            return resp
         else:
-            resp = jsonify('Traveller "destination" not found in query string')
+            resp = jsonify('Traveller "location or destination" not found in query string')
             resp.status_code = 500
             return resp
         conn.commit()
         conn.close()
+
+
+# @app.route('/travel_permit', methods=['GET'])
+# def get_traveller_destination():
+#         destination = request.args.get('destination')
+#         if destination:
+#             conn = sqlite3.connect('db.sqlite')
+#             cur = conn.cursor()
+#             cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
+#             result = cur.fetchall()
+#             resp = jsonify(result)
+#             resp.status_code = 200
+#         else:
+#             resp = jsonify('Traveller "destination" not found in query string')
+#             resp.status_code = 500
+#             return resp
+#         conn.commit()
+#         conn.close()
 
 # def dict_factory(cursor, row):
 #     d = {}
