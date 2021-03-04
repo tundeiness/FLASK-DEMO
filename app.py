@@ -33,19 +33,22 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # mysql.init_app(app)
 
 
-username = 'sqlite'
-host = 'localhost'
-port = 5005
-DB_NAME = 'tour_db'
+# username = 'sqlite'
+# host = 'localhost'
+# port = 5005
+# DB_NAME = 'tour_db'
 
 # Create database
 # engine = create_engine('sqlite:////tmp/test.db', convert_unicode=True)
 # engine = create_engine(f"sqlite:///{username}:{password}@{host}:{port}")
 
 # tour_db = 'sqlite:///{0}:{1}@{2}:{3}'.format(username, password, host, port)
-tour_db = 'sqlite:///{0}@{1}:{2}'.format(username, host, port)
-if not database_exists(tour_db):
-    create_database(tour_db)
+# tour_db = 'sqlite:///{0}@{1}:{2}'.format(username, host, port)
+# engine = "sqlite:///localhost/tour_db"
+# engine = create_engine("sqlite:///localhost/tour_db")
+# if not database_exists(tour_db):
+#     create_database(tour_db)
+
 
 # engine = sqlalchemy.create_engine('sqlite:///' + os.path.join(basedir, 'db2.sqlite') 
 # engine = create_engine('sqlite:///' + os.path.join(basedir, 'db2.sqlite'))
