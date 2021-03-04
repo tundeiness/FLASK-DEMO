@@ -179,6 +179,7 @@ def delete_travel_permit(id):
 @app.route('/travel_permit', methods=['GET'])
 def get_traveller_location():
         location = request.args.get('location')
+        destination = request.args.get('destination')
         if location:
             conn = sqlite3.connect('db.sqlite')
             cur = conn.cursor()
@@ -189,6 +190,24 @@ def get_traveller_location():
             return resp
         else:
             resp = jsonify('Traveller "location" not found in query string')
+            resp.status_code = 500
+            return resp
+        conn.commit()
+        conn.close()
+
+
+@app.route('/travel_permit', methods=['GET'])
+def get_traveller_destination():
+        destination = request.args.get('destination')
+        if destination:
+            conn = sqlite3.connect('db.sqlite')
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
+            result = cur.fetchall()
+            resp = jsonify(result)
+            resp.status_code = 200
+        else:
+            resp = jsonify('Traveller "destination" not found in query string')
             resp.status_code = 500
             return resp
         conn.commit()
