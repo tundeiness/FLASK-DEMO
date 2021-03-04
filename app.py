@@ -259,7 +259,7 @@ def create_connection(tour_db):
     """
     conn = None
     try:
-        conn = sqlite3.connect(tour_db)
+        conn = sqlite3.connect('tour.db')
         return conn
     except Error as e:
         print(e)
@@ -284,7 +284,7 @@ def create_table(conn, create_table_sql):
 
 def main():
     # database = r"C:\sqlite\db\pythonsqlite.db"
-    database = 'tour_db'
+    database = 'tour.db'
 
     sql_create_permit_table = """ CREATE TABLE IF NOT EXISTS permit (
                                         id integer PRIMARY KEY,
