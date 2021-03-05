@@ -65,9 +65,9 @@ ma = Marshmallow(app)
 
 
 class RestrictionType(Enum):
-    zero = "Unknown"
-    one = "Required"
-    two = "Unrequired"
+    unknown = "Unknown"
+    required = "Required"
+    unrequired = "Unrequired"
 
 
 # TravelPermit Class/Model
@@ -76,8 +76,8 @@ class TravelPermit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     location = db.Column(db.String(128), nullable=False)
     destination = db.Column(db.String(128), nullable=False)
-    visa = db.Column(db.Integer, IntRangeType(step=2), nullable=False, default=0)
-    quarantine = db.Column(db.Integer, IntRangeType(step=2), nullable=False, default=0)
+    visa = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown)
+    quarantine = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     # db.Column(db.Enum(RestrictionType))
     # value = db.Column(Enum(RestrictionType))
@@ -101,7 +101,7 @@ class TravelPermitSchema(ma.Schema):
         
 
 
-# Initialise schema
+# Initialise schema 
 travel_permit_schema = TravelPermitSchema()
 travel_permits_schema = TravelPermitSchema(many=True)
 
@@ -177,7 +177,7 @@ def get_travel_permits():
 
 @app.route('/travel-permit/<id_>', methods=['GET'])
 def get_travel_permit(id_):
-    travel_permit = TravelPermit.query.get_or_404(id)
+    travel_permit = TravelPermit.query.get_or_404(id_)
     return travel_permit_schema.jsonify(travel_permit)
 
 
@@ -185,7 +185,7 @@ def get_travel_permit(id_):
 
 @app.route('/travel-permit/<id_>', methods=['PUT'])
 def update_travel_permit(id_):
-    permit = TravelPermit.query.get_or_404(id)
+    permit = TravelPermit.query.get_or_404(id_)
     if request.method == 'PUT':
         take_off_location = request.json['location']
         travel_destination = request.json['destination']
@@ -255,7 +255,7 @@ def get_traveller_location():
 
 def create_connection(tour_db):
     """ create a database connection to the SQLite database
-        specified by db_file
+        specified by tour_db
     :param db_file: database file
     :return: Connection object or None
     """
