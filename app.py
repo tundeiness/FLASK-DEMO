@@ -19,7 +19,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # app = Flask(__name__, template_folder="templates")
 
 # Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'tour.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -72,7 +72,7 @@ class RestrictionType(Enum):
 
 # TravelPermit Class/Model
 class TravelPermit(db.Model):
-    # __tablename__ = 'travelpermits'
+    __tablename__ = 'travel_permit'
     id = db.Column(db.Integer, primary_key=True)
     location = db.Column(db.String(128), nullable=False)
     destination = db.Column(db.String(128), nullable=False)
@@ -175,16 +175,16 @@ def get_travel_permits():
 
 # Get Single permit
 
-@app.route('/travel-permit/<id>', methods=['GET'])
-def get_travel_permit(id):
+@app.route('/travel-permit/<id_>', methods=['GET'])
+def get_travel_permit(id_):
     travel_permit = TravelPermit.query.get_or_404(id)
     return travel_permit_schema.jsonify(travel_permit)
 
 
 # Update a Permit
 
-@app.route('/travel-permit/<id>', methods=['PUT'])
-def update_travel_permit(id):
+@app.route('/travel-permit/<id_>', methods=['PUT'])
+def update_travel_permit(id_):
     permit = TravelPermit.query.get_or_404(id)
     if request.method == 'PUT':
         take_off_location = request.json['location']
@@ -204,9 +204,9 @@ def update_travel_permit(id):
 
 # Get Delete permit
 
-@app.route('/travel-permit/<id>', methods=['DELETE'])
-def delete_travel_permit(id):
-    travel_permit = TravelPermit.query.get_or_404(id)
+@app.route('/travel-permit/<id_>', methods=['DELETE'])
+def delete_travel_permit(id_):
+    travel_permit = TravelPermit.query.get_or_404(id_)
     db.session.delete(travel_permit)
     db.session.commit()
     return travel_permit_schema.jsonify(travel_permit)
@@ -220,7 +220,7 @@ def get_traveller_location():
         # ex = TravelPermit.query.filter(TravelPermit.location == location)
         # print(ex)
         if location:
-            conn = sqlite3.connect('db.sqlite')
+            conn = sqlite3.connect('tour.db')
             cur = conn.cursor()
             cur.execute("SELECT * FROM travel_permit WHERE location=?", (location,))
             result = cur.fetchall()
@@ -228,7 +228,7 @@ def get_traveller_location():
             resp.status_code = 200
             return resp
         elif destination:
-            conn = sqlite3.connect('db.sqlite')
+            conn = sqlite3.connect('tour.db')
             cur = conn.cursor()
             cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
             result = cur.fetchall()
@@ -288,7 +288,7 @@ def main():
     # database = r"C:\sqlite\db\pythonsqlite.db"
     database = 'tour.db'
 
-    sql_create_permit_table = """ CREATE TABLE IF NOT EXISTS permit (
+    sql_create_travel_permit_table = """ CREATE TABLE IF NOT EXISTS travel_permit (
                                         id integer PRIMARY KEY,
                                         home string NOT NULL,
                                         destination string NOT NULL,
@@ -314,8 +314,8 @@ def main():
 
     # create tables
     if conn is not None:
-        # create projects table
-        create_table(conn, sql_create_permit_table)
+        # create travel_permit table
+        create_table(conn, sql_create_travel_permit_table)
 
         # create tasks table
         # create_table(conn, sql_create_traveller_table)
