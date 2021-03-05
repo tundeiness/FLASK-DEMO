@@ -74,7 +74,7 @@ class RestrictionType(Enum):
 class TravelPermit(db.Model):
     __tablename__ = 'travel_permit'
     id = db.Column(db.Integer, primary_key=True)
-    location = db.Column(db.String(128), nullable=False)
+    home = db.Column(db.String(128), nullable=False)
     destination = db.Column(db.String(128), nullable=False)
     visa = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown)
     quarantine = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown)
@@ -83,8 +83,8 @@ class TravelPermit(db.Model):
     # value = db.Column(Enum(RestrictionType))
 
 # constructor
-def __init__(self, location, destination, visa, quarantine):
-    self.location =  location
+def __init__(self, home, destination, visa, quarantine):
+    self.home =  home
     self.destination = destination
     self.visa = visa
     self.quarantine = quarantine
@@ -97,7 +97,7 @@ def __repr__(self):
 
 class TravelPermitSchema(ma.Schema):
     class Meta:
-        fields = ('id','location','destination','visa','quarantine')
+        fields = ('id','home','destination','visa','quarantine')
         
 
 
@@ -153,11 +153,11 @@ def index():
 @app.route('/travel-permit', methods=['POST'])
 def add_travel_permit():
     if request.method == 'POST':
-        take_off_location = request.json['location']
+        take_off_location = request.json['home']
         travel_destination = request.json['destination']
         visa = request.json['visa']
         quarantine = request.json['quarantine']
-        new_travel_permit = TravelPermit(location=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine )
+        new_travel_permit = TravelPermit(home=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine )
         db.session.add(new_travel_permit)
         db.session.commit()
         return travel_permit_schema.jsonify(new_travel_permit)
@@ -187,12 +187,12 @@ def get_travel_permit(id_):
 def update_travel_permit(id_):
     permit = TravelPermit.query.get_or_404(id_)
     if request.method == 'PUT':
-        take_off_location = request.json['location']
+        take_off_location = request.json['home']
         travel_destination = request.json['destination']
         visa = request.json['visa']
         quarantine = request.json['quarantine']
 
-        permit.location = take_off_location
+        permit.home = take_off_location
         permit.destination = travel_destination
         permit.visa = visa
         permit.quarantine = quarantine
@@ -214,15 +214,15 @@ def delete_travel_permit(id_):
 
 # Get Query 
 @app.route('/travel_permit', methods=['GET'])
-def get_traveller_location():
-        location = request.args.get('location')
+def get_traveller_origin():
+        home = request.args.get('home')
         destination = request.args.get('destination')
         # ex = TravelPermit.query.filter(TravelPermit.location == location)
         # print(ex)
-        if location:
+        if home:
             conn = sqlite3.connect('tour.db')
             cur = conn.cursor()
-            cur.execute("SELECT * FROM travel_permit WHERE location=?", (location,))
+            cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
             result = cur.fetchall()
             resp = jsonify(result)
             resp.status_code = 200
@@ -236,7 +236,7 @@ def get_traveller_location():
             resp.status_code = 200
             return resp
         else:
-            resp = jsonify('Traveller "location or destination" not found in query string')
+            resp = jsonify('Traveller "home or destination" not found in query string')
             resp.status_code = 500
             return resp
         conn.commit()
