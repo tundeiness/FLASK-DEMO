@@ -128,20 +128,6 @@ travel_permits_schema = TravelPermitSchema(many=True)
 #         return 'Blog post ' + str(self.id) 
 
 
-
-
-# all_posts =[
-#     {
-#     'title': 'Post 1',
-#     'content': 'This is the content of post 1',
-#     'author':'Tunde'
-#     },
-#     {
-#     'title': 'Post 2',
-#     'content': 'This is the content of post too'
-#     }
-# ]
-
 # define route
 @app.route('/')
 def index():
