@@ -7,9 +7,10 @@ from pathlib import Path
 import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy_utils import IntRangeType, create_database, database_exists
-from enum import Enum
 import sqlite3
+from enum import Enum
 from sqlite3 import Error
+import json
 
 
 
@@ -64,10 +65,10 @@ ma = Marshmallow(app)
 
 
 
-class RestrictionType(Enum):
-    unknown = "Unknown"
-    required = "Required"
-    unrequired = "Unrequired"
+class RestrictionType(str,Enum):
+    unknown = "unknown"
+    required = "required"
+    unrequired = "unrequired"
 
 
 # TravelPermit Class/Model
@@ -157,7 +158,7 @@ def add_travel_permit():
         travel_destination = request.json['destination']
         visa = request.json['visa']
         quarantine = request.json['quarantine']
-        new_travel_permit = TravelPermit(home=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine )
+        new_travel_permit = TravelPermit(home=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine)
         db.session.add(new_travel_permit)
         db.session.commit()
         return travel_permit_schema.jsonify(new_travel_permit)
