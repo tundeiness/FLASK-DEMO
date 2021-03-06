@@ -1,3 +1,4 @@
+from application import db, Bcrypt
 class User(db.model):
     __tablename__= "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -13,4 +14,4 @@ class User(db.model):
         self.last_name = last_name
         self.username = username
         self.email = email
-        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+        self.password = Bcrypt.generate_password_hash(password).decode('UTF-8')
