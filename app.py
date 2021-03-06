@@ -476,7 +476,7 @@ def main():
 #     except:
 #         return "error deleting post"
 
-
+ 
 @app.route('/static/js/brython.js')
 def brython_js():
     return Path('static/js/brython.js').read_text(), 200, [("Content-Type", "text/javascript")]

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.9.1/brython.min.js" integrity="sha512-QqJtZYGp0eHzvOxKw2RUODSL2iVW/2FH5NAaEobhgiVD0rUTJMVo4oLYd9QyEYwit0en+CGeft8eV/zEFeNPxA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.9.1/brython_stdlib.js" integrity="sha512-wYP7mTZHsGAGcwwof7CHkCfHXBNhpqpfQbnNaWCCzfba1QWl81KNhG5FmPGfcRPPtV0fmFCJSfmq0KKO294mrQ==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}" >
+    {%block head%} {%endblock%}
+</head>
+<body onload="brython(1)">
+    {% block body %} {% endblock %}
+    <script type=”text/python” src=”script/program.py”></script>
+</body>
+</html>  
