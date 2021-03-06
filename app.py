@@ -153,9 +153,59 @@ def add_travel_permit():
 
 @app.route('/travel-permit', methods=['GET'])
 def get_travel_permits():
-    all_permits = TravelPermit.query.all()
-    result = travel_permits_schema.dump(all_permits)
-    return jsonify(result)
+    home = request.args.get('home')
+    # destination_query_params = request.args.get('destination')
+    if home is not None:
+        conn = sqlite3.connect('tour.db')
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
+        result = cur.fetchall()
+        resp = jsonify(result)
+        resp.status_code = 200
+        return resp
+    elif home is None:
+        all_permits = TravelPermit.query.all()
+        result = travel_permits_schema.dump(all_permits)
+        return jsonify(result)
+    else:
+        # resp = jsonify('Traveller "home or destination" not found in query string')
+        # resp.status_code = 500
+        return 'Not Found'
+        conn.commit()
+        conn.close()
+
+
+
+
+# @app.route('/travel_permit', methods=['GET'])
+# def get_traveller_origin():
+#         home = request.args.get('home')
+#         destination = request.args.get('destination')
+        # ex = TravelPermit.query.filter(TravelPermit.location == location)
+        # print(ex)
+        # if home:
+        #     conn = sqlite3.connect('tour.db')
+        #     cur = conn.cursor()
+        #     cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
+        #     result = cur.fetchall()
+        #     resp = jsonify(result)
+        #     resp.status_code = 200
+        #     return resp
+        # elif destination:
+        #     conn = sqlite3.connect('tour.db')
+        #     cur = conn.cursor()
+        #     cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
+        #     result = cur.fetchall()
+        #     resp = jsonify(result)
+        #     resp.status_code = 200
+        #     return resp
+        # else:
+        #     resp = jsonify('Traveller "home or destination" not found in query string')
+        #     resp.status_code = 500
+        #     return resp
+        # conn.commit()
+        # conn.close()
+
 
 
 
@@ -200,34 +250,34 @@ def delete_travel_permit(id_):
 
 
 # Get Query 
-@app.route('/travel_permit', methods=['GET'])
-def get_traveller_origin():
-        home = request.args.get('home')
-        destination = request.args.get('destination')
-        # ex = TravelPermit.query.filter(TravelPermit.location == location)
-        # print(ex)
-        if home:
-            conn = sqlite3.connect('tour.db')
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
-            result = cur.fetchall()
-            resp = jsonify(result)
-            resp.status_code = 200
-            return resp
-        elif destination:
-            conn = sqlite3.connect('tour.db')
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
-            result = cur.fetchall()
-            resp = jsonify(result)
-            resp.status_code = 200
-            return resp
-        else:
-            resp = jsonify('Traveller "home or destination" not found in query string')
-            resp.status_code = 500
-            return resp
-        conn.commit()
-        conn.close()
+# @app.route('/travel_permit', methods=['GET'])
+# def get_traveller_origin():
+#         home = request.args.get('home')
+#         destination = request.args.get('destination')
+#         # ex = TravelPermit.query.filter(TravelPermit.location == location)
+#         # print(ex)
+#         if home:
+#             conn = sqlite3.connect('tour.db')
+#             cur = conn.cursor()
+#             cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
+#             result = cur.fetchall()
+#             resp = jsonify(result)
+#             resp.status_code = 200
+#             return resp
+#         elif destination:
+#             conn = sqlite3.connect('tour.db')
+#             cur = conn.cursor()
+#             cur.execute("SELECT * FROM travel_permit WHERE destination=?", (destination,))
+#             result = cur.fetchall()
+#             resp = jsonify(result)
+#             resp.status_code = 200
+#             return resp
+#         else:
+#             resp = jsonify('Traveller "home or destination" not found in query string')
+#             resp.status_code = 500
+#             return resp
+#         conn.commit()
+#         conn.close()
 
 
 
