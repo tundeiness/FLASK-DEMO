@@ -1,17 +1,18 @@
-from application import db, Bcrypt
-class User(db.model):
-    __tablename__= "users"
+from application import db, bcrypt
+class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, unique=True)
-    email = db.Column(db.Text, unique=True)
-    password = db.Column(db.Text)
-    first_name = db.Column(db.Text)
-    last_name = db.Column(db.Text)
+    first_name = db.Column(db.String(128), nullable=False)
+    last_name = db.Column(db.String(128), nullable=False)
+    username = db.Column(db.String(128), nullable=False)
+    email = db.Column(db.String(128), nullable=False)
+    password = db.Column(db.String(80))
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
-    def __init__(self, first_name, last_name, username, email, password):
-        self.first_name = first_name
+    def __init__(self,first_name, last_name, username, email, password):
+        self.first_name=  first_name
         self.last_name = last_name
         self.username = username
         self.email = email
-        self.password = Bcrypt.generate_password_hash(password).decode('UTF-8')
+        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')

@@ -1,5 +1,5 @@
 import os
-from flask import Flask,render_template, request, jsonify
+from flask import Flask,render_template, request, jsonify, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -12,6 +12,7 @@ from enum import Enum
 from sqlite3 import Error
 import json
 from flask_login import UserMixin
+from flask_modus import Modus
 
 
 
@@ -19,6 +20,22 @@ from flask_login import UserMixin
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 # app = Flask(__name__, template_folder="templates")
+
+# Check environment
+
+# ENV = 'dev'
+# ENV = 'prod'
+
+# if ENV == 'dev':
+    # app.debug = True
+    # create database with postgres 
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///postgres:12345@localhost/main' 
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///localhost/main' 
+# else:
+    # app.debug() = False
+    # app.config['SQLALCHEMY_DATABASE_URI'] = ''
+
+
 
 # Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'tour.db')
@@ -57,6 +74,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # conn = engine.connect()
 # conn.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
 # conn.close()
+
+modus = Modus(app)
 
 # initialise database
 db = SQLAlchemy(app)
@@ -111,10 +130,9 @@ travel_permits_schema = TravelPermitSchema(many=True)
 
 
 # User Class/Model
-class User(UserMixin, db.Model):
+class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    public_id = db.Column(db.String(50), unique=True)
     first_name = db.Column(db.String(128), nullable=False)
     last_name = db.Column(db.String(128), nullable=False)
     username = db.Column(db.String(128), nullable=False)
@@ -128,7 +146,7 @@ def __init__(self,first_name, last_name, username, email, password):
     self.last_name = last_name
     self.username = username
     self.email = email
-    self.password = password
+    self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 def __repr__(self):
     return '<User %r>' % self.username 
@@ -143,6 +161,61 @@ class UserSchema(ma.Schema):
 # Initialise schema 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+
+
+
+@app.route('/users', methods=['GET', 'POST'])
+def sign_up():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+
+
+
+@app.route('/users', methods=['POST'])
+def index():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('users/templates/index.html', users=User.query.all())
+
+        # user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
+
+        # if user: # if a user is found, we want to redirect back to signup page so user can try again
+            # return redirect(url_for('auth.signup'))
+            # return redirect('/signup')
+
+        # create a new user with the form data. Hash the password so the plaintext version isn't saved.
+        # new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+
+        # add the new user to the database
+        # db.session.add(new_user)
+        # db.session.commit()
+
+        # return redirect('/login')
+        # return redirect(url_for('auth.login'))
+
+        # self.first_name=  first_name
+        # self.last_name = last_name
+        # self.username = username
+        # self.email = email
+        # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+@app.route('/users/signup')
+def signup():
+    return render_template('users/templates/signup.html')
+
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
@@ -168,6 +241,7 @@ users_schema = UserSchema(many=True)
 @app.route('/')
 def index():
     return render_template('main.html')
+    # return redirect(url_for('signup'))
     # return Path('index.html').read_bytes();
 
 
@@ -401,18 +475,18 @@ def main():
 
 # User
 
-@app.route('/users', methods=["GET", "POST"])
-def index():
-    if request.method == 'POST':
-        first_name = request.json['first_name']
-        last_name = request.json['last_name']
-        username = request.json['username']
-        email = request.json['email']
-        password = request.json['password']
-        new_user = TravelPermit(home=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine)
-        db.session.add(new_user)
-        db.session.commit()
-        return user_schema.jsonify(new_user)
+# @app.route('/users', methods=["GET", "POST"])
+# def index():
+#     if request.method == 'POST':
+#         first_name = request.json['first_name']
+#         last_name = request.json['last_name']
+#         username = request.json['username']
+#         email = request.json['email']
+#         password = request.json['password']
+#         new_user = TravelPermit(home=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine)
+#         db.session.add(new_user)
+#         db.session.commit()
+#         return user_schema.jsonify(new_user)
 
 
 
