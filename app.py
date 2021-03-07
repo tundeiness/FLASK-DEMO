@@ -229,12 +229,12 @@ def signup():
         # self.email = email
         # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
-@app.route('/users/index')
+@app.route('/users', methods=['GET'])
 def alluser():
     all_user = User.query.all()
-    return render_template('users/templates/index.html', users=all_user)
-    # result = users_schema.dump(all_permits)
-    # return jsonify(result)
+    # return render_template('users/templates/index.html', users=all_user)
+    result = users_schema.dump(all_user)
+    return jsonify(result)
     #return render_template('users/templates/signup.html')
 
 
