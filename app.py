@@ -164,14 +164,14 @@ users_schema = UserSchema(many=True)
 
 
 
-@app.route('/users', methods=['GET', 'POST'])
-def sign_up():
-    if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
+# @app.route('/users', methods=['GET', 'POST'])
+# def sign_up():
+#     if request.method == 'POST':
+#         first_name = request.form.get('first_name')
+#         last_name = request.form.get('last_name')
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
 
 
 
@@ -202,7 +202,7 @@ def signup():
         check_user = User.query.filter_by(email=email).first()
         if check_user:
             # Flash message letting user know they need to login
-            return redirect('/users/login')
+            return redirect(url_for('login')) #redirect to users/login method
         else:
             new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
             db.session.add(new_user)
@@ -242,12 +242,19 @@ def login():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        check_user = User.query.filter_by(email=email).first()
-        if check_user:
-            return render_template('users/templates/profile.html', user=username)
-        else:
-            # a Flash message will be adequate for this
-            return 'wrong email or password'
+        # check_user = User.query.filter_by(email=email).first()
+        for user in users:
+            if user.password == password:
+                found_user = user
+                return render_template('users/templates/profile.html', user=found_user)
+            else:
+                return 'wrong email or password'
+
+        # if check_user:
+        #     return render_template('users/templates/profile.html', user=username)
+        # else:
+        #     # a Flash message will be adequate for this
+        #     return 'wrong email or password'
 
 
 
