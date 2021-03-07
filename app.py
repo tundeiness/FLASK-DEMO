@@ -176,21 +176,21 @@ def sign_up():
 
 
 
-@app.route('/users', methods=['POST'])
-def index():
-    if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('index'))
-    return render_template('users/templates/index.html', users=User.query.all())
+# @app.route('/users', methods=['POST'])
+# def index():
+#     if request.method == 'POST':
+#         first_name = request.form.get('first_name')
+#         last_name = request.form.get('last_name')
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+#         db.session.add(new_user)
+#         db.session.commit()
+#         return redirect(url_for('index'))
+#     return render_template('users/templates/index.html', users=User.query.all())
 
-
+# USERS SIGNUP
 @app.route('/users/signup', methods=['POST'])
 def signup():
     if request.method == 'POST':
@@ -199,11 +199,16 @@ def signup():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-        db.session.add(new_user)
-        db.session.commit()
+        check_user = User.query.filter_by(email=email).first()
+        if check_user:
+            # Flash message letting user know they need to login
+            return redirect('/users/login')
+        else:
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+            db.session.add(new_user)
+            db.session.commit()
         # need a flash message here
-        return render_template('users/templates/profile.html', users=new_user)
+            return render_template('users/templates/profile.html', user=new_user)
     # return render_template('users/templates/index.html', users=User.query.all())
 
 
@@ -228,6 +233,30 @@ def signup():
         # self.username = username
         # self.email = email
         # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+
+# USERS lOGIN
+@app.route('/users/login', methods=['POST'])
+def login():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        # need a flash message here
+        return render_template('users/templates/profile.html', user=new_user)
+    # return render_template('users/templates/index.html', users=User.query.all())
+
+
+
+
+
+
+# GET ALL USERS
 
 @app.route('/users', methods=['GET'])
 def alluser():

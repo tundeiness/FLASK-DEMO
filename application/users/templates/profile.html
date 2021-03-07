@@ -3,5 +3,8 @@
 {% block content %}
 <h1 class="title">
   Welcome, Anthony!
+  <!-- {% for user in users %} -->
+    Welcome, {{user.first_name}} {{user.last_name}}.
+<!-- {% endfor %} -->
 </h1>
 {% endblock %}
