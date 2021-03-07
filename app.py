@@ -243,6 +243,7 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         # check_user = User.query.filter_by(email=email).first()
+        # found_user = [user for  user in users if user.password == password][0]
         for user in users:
             if user.password == password:
                 found_user = user
