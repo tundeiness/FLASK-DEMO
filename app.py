@@ -190,6 +190,23 @@ def index():
         return redirect(url_for('index'))
     return render_template('users/templates/index.html', users=User.query.all())
 
+
+@app.route('/users/signup', methods=['POST'])
+def signup():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        # need a flash message here
+        return render_template('users/templates/profile.html', users=new_user)
+    # return render_template('users/templates/index.html', users=User.query.all())
+
+
         # user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
         # if user: # if a user is found, we want to redirect back to signup page so user can try again
@@ -212,9 +229,13 @@ def index():
         # self.email = email
         # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
-@app.route('/users/signup')
-def signup():
-    return render_template('users/templates/signup.html')
+@app.route('/users/index')
+def alluser():
+    all_user = User.query.all()
+    return render_template('users/templates/index.html', users=all_user)
+    # result = users_schema.dump(all_permits)
+    # return jsonify(result)
+    #return render_template('users/templates/signup.html')
 
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
