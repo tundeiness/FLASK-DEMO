@@ -239,20 +239,15 @@ def signup():
 @app.route('/users/login', methods=['POST'])
 def login():
     if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        # need a flash message here
-        return render_template('users/templates/profile.html', user=new_user)
-    # return render_template('users/templates/index.html', users=User.query.all())
-
-
-
+        check_user = User.query.filter_by(email=email).first()
+        if check_user:
+            return render_template('users/templates/profile.html', user=username)
+        else:
+            # a Flash message will be adequate for this
+            return 'wrong email or password'
 
 
 
