@@ -6,7 +6,7 @@
 
 {% block body %}
   <h1 class="title">
-      Welcome {{user.username}}
+      Welcome {{g.user.username}} 
   </h1>
   <div class="auth-wrapper">
     <a href="{{url_for('logout')}}">Log out</a>

@@ -10,6 +10,7 @@
     {%block head%} {%endblock%}
 </head>
 <body onload="brython(1)">
+    {% include 'includes/_messages.html' %}
     {% block body %} {% endblock %}
     <script type=”text/python” src=”script/program.py”></script>
 </body>

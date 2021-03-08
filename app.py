@@ -1,5 +1,5 @@
 import os
-from flask import Flask,render_template, request, jsonify, url_for, redirect, session
+from flask import Flask,render_template, request, jsonify, url_for, redirect, session, g, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -13,6 +13,7 @@ from sqlite3 import Error
 import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 
 
 # Initialise app
@@ -138,8 +139,8 @@ class User(db.Model):
     last_name = db.Column(db.String(128), nullable=False)
     username = db.Column(db.String(128), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=False)
-    password = db.Column(db.Text)
-    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    password = db.Column(db.Text, nullable=False)
+    reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
 def __init__(self,first_name, last_name, username, email, password):
@@ -162,6 +163,17 @@ class UserSchema(ma.Schema):
 # Initialise schema 
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+
+
+
+class SignupForm(Form):
+    first_name = StringField('First_Name', [validators.Length(min=5, max=50)])
+    last_name = StringField('Last_Name', [validators.Length(min=5, max=50)])
+    username = StringField('Username', [validators.Length(min=5, max=50)])
+    email = StringField('Email', [validators.Length(min=6, max=50)])
+    password = PasswordField('Password', [validators.DataRequired(),
+    validators.EqualTo('confirm', message='Password do not match')])
+    confirm = PasswordField('Confirm Password')
 
 
 
@@ -208,17 +220,29 @@ def query_users():
 
 @app.route('/signup', methods=['GET','POST'])
 def signup():
-    if request.method == 'POST':
-        session.pop('user_id', None)
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        found_user = [x for x in query_users() if x.username == username][0]
-        if found_user and found_user.password == password:
-            session['user_id'] = found_user.id
-            return redirect(url_for('profile'))
+    form = SignupForm(request.form)
+    if request.method == 'POST' and form.validate():
+        first_name = form.first_name.data
+        last_name = form.last_name.data
+        username = form.username.data
+        email = form.email.data
+        password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Sign up successful', 'success')
         return redirect(url_for('login'))
-    return render_template('signup.html')
+    return render_template('register.html', form=form)
+    #     session.pop('user_id', None)
+    #     username = request.form.get('username')
+    #     email = request.form.get('email')
+    #     password = request.form.get('password')
+    #     found_user = [x for x in query_users() if x.username == username][0]
+    #     if found_user and found_user.password == password:
+    #         session['user_id'] = found_user.id
+    #         return redirect(url_for('profile'))
+    #     return redirect(url_for('login'))
+    # return render_template('signup.html')
     # if request.method == 'POST':
     # return render_template('signup.html')
         # db.session.add(get_details())
@@ -246,7 +270,34 @@ def signup():
         # return render_template('users/templates/profile.html', user=new_user)
 
 
-
+@app.route('/register', methods=['GET','POST'])
+def register():
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = bcrypt.generate_password_hash(password).decode('UTF-8')
+        if username and email and password:
+            hashed_password = bcrypt.generate_password_hash(password).decode('UTF-8')
+            check_user = User.query.filter_by(email=email).first()
+            if not check_user:
+                new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=hashed_password)
+                db.session.add(new_user)
+                db.session.commit()
+                return redirect(url_for('login'))
+            else:
+                return "A user with these details already exist"
+        else:
+            return "Fill the required fields"
+    else:
+     return render_template('register.html')     
+    #     new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+    #     db.session.add(new_user)
+    #     db.session.commit()
+    #     flash('Sign up successful', 'success')
+    #     return redirect(url_for('login'))
+    # return render_template('register.html')
 
 
 # USERS SIGNUP
@@ -294,6 +345,13 @@ def signup():
         # self.email = email
         # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
+@app.before_request
+def before_request():
+    g.user = None 
+
+    if 'user_id' in session:
+        found_user = [x for x in query_users() if x.id == session['user_id']][0]
+        g.user = found_user 
 
 # USERS lOGIN
 @app.route('/login', methods=['GET','POST'])
@@ -321,19 +379,21 @@ def login():
 # USERS lOGOUT
 @app.route('/logout', methods=['DELETE'])
 def logout():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        users = User.query.all()
-        # check_user = User.query.filter_by(email=email).first()
-        # found_user = [user for  user in users if user.password == password][0]
-        for user in users:
-            if user.password == password:
-                found_user = user
-                return render_template('users/templates/profile.html', user=found_user)
-            else:
-                return 'wrong email or password'
+    session.pop('user_id', None)
+    return redirect(url_for('/'))
+    # if request.method == 'POST':
+    #     username = request.form.get('username')
+    #     email = request.form.get('email')
+    #     password = request.form.get('password')
+    #     users = User.query.all()
+    #     # check_user = User.query.filter_by(email=email).first()
+    #     # found_user = [user for  user in users if user.password == password][0]
+    #     for user in users:
+    #         if user.password == password:
+    #             found_user = user
+    #             return render_template('users/templates/profile.html', user=found_user)
+    #         else:
+    #             return 'wrong email or password'
 
         # if check_user:
         #     return render_template('users/templates/profile.html', user=username)
@@ -357,6 +417,8 @@ def alluser():
 
 @app.route('/profile')
 def profile():
+    if not g.user:
+        return redirect(url_for('login'))
     return render_template('profile.html', user=get_details())
 
 
