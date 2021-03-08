@@ -12,7 +12,7 @@ from enum import Enum
 from sqlite3 import Error
 import json
 from flask_modus import Modus
-
+from flask_bcrypt import Bcrypt
 
 
 # Initialise app
@@ -75,6 +75,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # conn.close()
 
 modus = Modus(app)
+bcrypt = Bcrypt(app)
 
 # initialise database
 db = SQLAlchemy(app)
@@ -134,9 +135,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(128), nullable=False)
     last_name = db.Column(db.String(128), nullable=False)
-    username = db.Column(db.String(128), nullable=False)
+    username = db.Column(db.String(128), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=False)
-    password = db.Column(db.String(80))
+    password = db.Column(db.Text)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
@@ -497,6 +498,16 @@ def main():
                                         date_created text
                                     ); """
 
+    sql_create_users_table = """ CREATE TABLE IF NOT EXISTS users (
+                                        id integer PRIMARY KEY,
+                                        first_name string NOT NULL,
+                                        last_name string NOT NULL,
+                                        username string NOT NULL,
+                                        email string NOT NULL,
+                                        password string NOT NULL,
+                                        date_created text
+                                    ); """
+
     # sql_create_traveller_table = """CREATE TABLE IF NOT EXISTS tasks (
     #                                 id integer PRIMARY KEY,
     #                                 name text NOT NULL,
@@ -509,6 +520,9 @@ def main():
     #                             );"""
 
 
+
+
+
     # create a database connection
     conn = create_connection(database)
 
@@ -516,6 +530,8 @@ def main():
     if conn is not None:
         # create travel_permit table
         create_table(conn, sql_create_travel_permit_table)
+        # create users table
+        create_table(conn, sql_create_users_table)
 
         # create tasks table
         # create_table(conn, sql_create_traveller_table)
