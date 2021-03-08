@@ -504,7 +504,7 @@ def main():
                                         last_name string NOT NULL,
                                         username string NOT NULL,
                                         email string NOT NULL,
-                                        password string NOT NULL,
+                                        password text NOT NULL,
                                         date_created text
                                     ); """
 
