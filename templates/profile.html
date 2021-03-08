@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Profile Page</title>
+{% endblock %}
+
+{% block body %}
+  <h1 class="title">
+      Welcome {{user.username}}
+  </h1>
+  <div class="auth-wrapper">
+    <a href="{{url_for('logout')}}">Log out</a>
+</div>
+{% endblock %}

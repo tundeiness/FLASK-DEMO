@@ -1,5 +1,5 @@
 import os
-from flask import Flask,render_template, request, jsonify, url_for, redirect
+from flask import Flask,render_template, request, jsonify, url_for, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -17,6 +17,7 @@ from flask_bcrypt import Bcrypt
 
 # Initialise app
 app = Flask(__name__)
+app.secret_key = 'formyeyesonlysecretkey'
 basedir = os.path.abspath(os.path.dirname(__file__))
 # app = Flask(__name__, template_folder="templates")
 
@@ -149,7 +150,7 @@ def __init__(self,first_name, last_name, username, email, password):
     self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 def __repr__(self):
-    return '<User %r>' % self.username 
+    return f'<User: {self.username}>' 
 
 
 
@@ -190,26 +191,84 @@ users_schema = UserSchema(many=True)
 #         return redirect(url_for('index'))
 #     return render_template('users/templates/index.html', users=User.query.all())
 
-# USERS SIGNUP
-@app.route('/users/signup', methods=['GET','POST'])
+def get_details():
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+    return new_user
+
+
+def query_users():
+    users = User.query.all()
+    return users
+
+
+@app.route('/signup', methods=['GET','POST'])
 def signup():
     if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
+        session.pop('user_id', None)
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        check_user = User.query.filter_by(email=email).first()
-        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-        if check_user:
-            # Flash message letting user know they need to login
-            return redirect(url_for('login')) #redirect to users/login method
-        else:
-            # new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-            db.session.add(new_user)
-            db.session.commit()
-        # need a flash message here
-        return render_template('users/templates/profile.html', user=new_user)
+        found_user = [x for x in query_users() if x.username == username][0]
+        if found_user and found_user.password == password:
+            session['user_id'] = found_user.id
+            return redirect(url_for('profile'))
+        return redirect(url_for('login'))
+    return render_template('signup.html')
+    # if request.method == 'POST':
+    # return render_template('signup.html')
+        # db.session.add(get_details())
+        # db.session.commit()
+        # return redirect(url_for('signup'))#redirect to users/login method
+    # return render_template('signup.html')
+    # return redirect(url_for('signup'))#redirect to users/login method
+    # else:
+        # return render_template('profile.html')
+        # first_name = request.form.get('first_name')
+        # last_name = request.form.get('last_name')
+        # username = request.form.get('username')
+        # email = request.form.get('email')
+        # password = request.form.get('password')
+        # check_user = User.query.filter_by(email=email).first()
+        # new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        # if check_user:
+        #     # Flash message letting user know they need to login
+        #     return redirect(url_for('login')) #redirect to users/login method
+        # else:
+        #     # new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+        #     db.session.add(new_user)
+        #     db.session.commit()
+        # # need a flash message here
+        # return render_template('users/templates/profile.html', user=new_user)
+
+
+
+
+
+# USERS SIGNUP
+# @app.route('/users/signup', methods=['GET','POST'])
+# def signup():
+#     if request.method == 'POST':
+#         first_name = request.form.get('first_name')
+#         last_name = request.form.get('last_name')
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         check_user = User.query.filter_by(email=email).first()
+#         new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+#         if check_user:
+#             # Flash message letting user know they need to login
+#             return redirect(url_for('login')) #redirect to users/login method
+#         else:
+#             # new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+#             db.session.add(new_user)
+#             db.session.commit()
+#         # need a flash message here
+#         return render_template('users/templates/profile.html', user=new_user)
     # return render_template('users/templates/index.html', users=User.query.all())
 
 
@@ -237,8 +296,31 @@ def signup():
 
 
 # USERS lOGIN
-@app.route('/users/login', methods=['GET','POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
+    if request.method == 'POST':
+        session.pop('user_id', None)
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        found_user = [x for x in query_users() if x.username == username][0]
+        if found_user and found_user.password == password:
+            session['user_id'] = found_user.id
+            return redirect(url_for('profile'))
+        return redirect(url_for('login'))
+    return render_template('login.html')
+
+        # if check_user:
+        #     return render_template('users/templates/profile.html', user=username)
+        # else:
+        #     # a Flash message will be adequate for this
+        #     return 'wrong email or password'
+
+
+
+# USERS lOGOUT
+@app.route('/logout', methods=['DELETE'])
+def logout():
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -272,6 +354,14 @@ def alluser():
     #return render_template('users/templates/signup.html')
 
 
+
+@app.route('/profile')
+def profile():
+    return render_template('profile.html', user=get_details())
+
+
+
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
@@ -294,7 +384,7 @@ def alluser():
 
 # define route
 @app.route('/')
-def index():
+def root():
     return render_template('main.html')
     # return redirect(url_for('signup'))
     # return Path('index.html').read_bytes();
