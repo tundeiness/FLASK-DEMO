@@ -11,7 +11,7 @@ import sqlite3
 from enum import Enum
 from sqlite3 import Error
 import json
-from flask_modus import Modus
+# from flask_modus import Modus
 from flask_bcrypt import Bcrypt
 
 
@@ -74,7 +74,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # conn.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
 # conn.close()
 
-modus = Modus(app)
+# modus = Modus(app)
 bcrypt = Bcrypt(app)
 
 # initialise database
@@ -191,7 +191,7 @@ users_schema = UserSchema(many=True)
 #     return render_template('users/templates/index.html', users=User.query.all())
 
 # USERS SIGNUP
-@app.route('/users/signup', methods=['POST'])
+@app.route('/users/signup', methods=['GET','POST'])
 def signup():
     if request.method == 'POST':
         first_name = request.form.get('first_name')
@@ -200,15 +200,16 @@ def signup():
         email = request.form.get('email')
         password = request.form.get('password')
         check_user = User.query.filter_by(email=email).first()
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
         if check_user:
             # Flash message letting user know they need to login
             return redirect(url_for('login')) #redirect to users/login method
         else:
-            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+            # new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
             db.session.add(new_user)
             db.session.commit()
         # need a flash message here
-            return render_template('users/templates/profile.html', user=new_user)
+        return render_template('users/templates/profile.html', user=new_user)
     # return render_template('users/templates/index.html', users=User.query.all())
 
 
@@ -236,7 +237,7 @@ def signup():
 
 
 # USERS lOGIN
-@app.route('/users/login', methods=['POST'])
+@app.route('/users/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
