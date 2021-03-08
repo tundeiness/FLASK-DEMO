@@ -14,6 +14,7 @@ import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from sqlalchemy.exc import IntegrityError
 
 
 # Initialise app
@@ -240,7 +241,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
         flash('Sign up successful', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('profile'))
     return render_template('register.html', form=form)
     #     session.pop('user_id', None)
     #     username = request.form.get('username')
@@ -279,28 +280,30 @@ def signup():
         # return render_template('users/templates/profile.html', user=new_user)
 
 
-@app.route('/register', methods=['GET','POST'])
-def register():
-    if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = bcrypt.generate_password_hash(password).decode('UTF-8')
-        if username and email and password:
-            hashed_password = bcrypt.generate_password_hash(password).decode('UTF-8')
-            check_user = User.query.filter_by(email=email).first()
-            if not check_user:
-                new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=hashed_password)
-                db.session.add(new_user)
-                db.session.commit()
-                return redirect(url_for('login'))
-            else:
-                return "A user with these details already exist"
-        else:
-            return "Fill the required fields"
-    else:
-     return render_template('register.html')     
+# @app.route('/register', methods=['GET','POST'])
+# def register():
+#     if request.method == 'POST':
+#         first_name = request.form.get('first_name')
+#         last_name = request.form.get('last_name')
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = bcrypt.generate_password_hash(password).decode('UTF-8')
+#         if username and email and password:
+#             hashed_password = bcrypt.generate_password_hash(password).decode('UTF-8')
+#             check_user = User.query.filter_by(email=email).first()
+#             if not check_user:
+#                 new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=hashed_password)
+#                 db.session.add(new_user)
+#                 db.session.commit()
+#                 return redirect(url_for('login'))
+#             else:
+#                 return "A user with these details already exist"
+#         else:
+#             return "Fill the required fields"
+#     else:
+#      return render_template('register.html')     
+
+
     #     new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
     #     db.session.add(new_user)
     #     db.session.commit()
@@ -358,25 +361,54 @@ def register():
 def before_request():
     g.user = None 
 
-    if 'user_id' in session:
-        found_user = [x for x in query_users() if x.id == session['user_id']][0]
+    if 'email' in session:
+        found_user = [x for x in query_users() if x.email == session['email']][0]
         g.user = found_user 
 
 # USERS lOGIN
+# @app.route('/login', methods=['GET','POST'])
+# def login():
+#     if request.method == 'POST':
+#         session.pop('user_id', None)
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
+#         found_user = [x for x in query_users() if x.username == username][0]
+#         if found_user and found_user.password == password:
+#             session['user_id'] = found_user.id
+#             return redirect(url_for('profile'))
+#         return redirect(url_for('login'))
+#     return render_template('login.html')
+
+
+
 @app.route('/login', methods=['GET','POST'])
 def login():
-    if request.method == 'POST':
-        session.pop('user_id', None)
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        found_user = [x for x in query_users() if x.username == username][0]
-        if found_user and found_user.password == password:
-            session['user_id'] = found_user.id
-            return redirect(url_for('profile'))
-        return redirect(url_for('login'))
-    return render_template('login.html')
-
+    # Creating Login form object
+    form = LoginForm(request.form)
+    # verifying that method is post and form is valid
+    if request.method == 'POST' and form.validate:
+        # checking that user is exist or not by email
+        user = User.query.filter_by(email = form.email.data).first()
+        # user = User.query.filter_by(email = form.email.data).first()
+        if user:
+             # if user exist in database than we will compare our 
+             # database hased password and password come from login form 
+            authenticated_user = bcrypt.check_password_hash(user.password, form.password.data)
+            if authenticated_user:
+                # if password is matched, allow user to access and 
+                # save email and username inside the session
+                # return 'Logged in!!'
+                flash('You have successfully logged in.', "success")
+                session['logged_in'] = True
+                session['email'] = user.email 
+                session['username'] = user.username
+                # After successful login, redirecting to home page
+                return redirect(url_for('profile'))
+            else:
+                flash('Wrong Username or Password', "Danger")
+                return redirect(url_for('login'))
+    return render_template('login.html', form = form)
         # if check_user:
         #     return render_template('users/templates/profile.html', user=username)
         # else:
@@ -386,10 +418,20 @@ def login():
 
 
 # USERS lOGOUT
-@app.route('/logout', methods=['DELETE'])
+@app.route('/logout')
 def logout():
-    session.pop('user_id', None)
-    return redirect(url_for('/'))
+    # Removing data from session by setting logged_flag to False.
+    session['logged_in'] = False
+    # redirecting to home page
+    return redirect(url_for('root'))
+
+
+
+
+# @app.route('/logout', methods=['DELETE'])
+# def logout():
+#     session.pop('user_id', None)
+#     return redirect(url_for('/'))
     # if request.method == 'POST':
     #     username = request.form.get('username')
     #     email = request.form.get('email')
