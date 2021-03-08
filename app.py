@@ -1,5 +1,5 @@
 import os
-from flask import Flask,render_template, request, jsonify, url_for
+from flask import Flask,render_template, request, jsonify, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -11,7 +11,6 @@ import sqlite3
 from enum import Enum
 from sqlite3 import Error
 import json
-from flask_login import UserMixin
 from flask_modus import Modus
 
 
@@ -242,6 +241,7 @@ def login():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        users = User.query.all()
         # check_user = User.query.filter_by(email=email).first()
         # found_user = [user for  user in users if user.password == password][0]
         for user in users:
