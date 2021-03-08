@@ -177,6 +177,15 @@ class SignupForm(Form):
 
 
 
+class LoginForm(Form):
+    username = StringField('Username', [validators.Length(min=5, max=50)])
+    email = StringField("Email", validators=[validators.Length(min=6, max=50), 
+    validators.DataRequired(message="Please Fill This Field")])
+    password = PasswordField("Password", validators=[validators.DataRequired(message="Please Fill This Field")])
+    # password = PasswordField('Password', [validators.DataRequired(),
+    # validators.EqualTo('confirm', message='Password do not match')])
+
+
 # @app.route('/users', methods=['GET', 'POST'])
 # def sign_up():
 #     if request.method == 'POST':
