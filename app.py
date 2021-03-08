@@ -655,10 +655,10 @@ def main():
                                         id integer PRIMARY KEY,
                                         first_name string NOT NULL,
                                         last_name string NOT NULL,
-                                        username string NOT NULL,
+                                        username string NOT NULL UNIQUE,
                                         email string NOT NULL,
                                         password text NOT NULL,
-                                        date_created text
+                                        reg_date text
                                     ); """
 
     # sql_create_traveller_table = """CREATE TABLE IF NOT EXISTS tasks (
@@ -713,30 +713,30 @@ def main():
 
 
 
-@app.route('/signup', methods=['POST'])
-def signup_post():
-    if request.method == 'POST':
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
+# @app.route('/signup', methods=['POST'])
+# def signup_post():
+#     if request.method == 'POST':
+#         first_name = request.form.get('first_name')
+#         last_name = request.form.get('last_name')
+#         username = request.form.get('username')
+#         email = request.form.get('email')
+#         password = request.form.get('password')
 
-        user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
+#         user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
-        if user: # if a user is found, we want to redirect back to signup page so user can try again
-            # return redirect(url_for('auth.signup'))
-            return redirect('/signup')
+#         if user: # if a user is found, we want to redirect back to signup page so user can try again
+#             # return redirect(url_for('auth.signup'))
+#             return redirect('/signup')
 
-        # create a new user with the form data. Hash the password so the plaintext version isn't saved.
-        new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+#         # create a new user with the form data. Hash the password so the plaintext version isn't saved.
+#         new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
 
-        # add the new user to the database
-        db.session.add(new_user)
-        db.session.commit()
+#         # add the new user to the database
+#         db.session.add(new_user)
+#         db.session.commit()
 
-        return redirect('/login')
-        # return redirect(url_for('auth.login'))
+#         return redirect('/login')
+#         # return redirect(url_for('auth.login'))
 
 
 
