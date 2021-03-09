@@ -397,7 +397,7 @@ def login():
             authenticated_user = bcrypt.check_password_hash(user.password, form.password.data)
             if authenticated_user:
                 # if password is matched, allow user to access and 
-                # save email and username inside the session
+                # save email and username inside the session 
                 # return 'Logged in!!'
                 flash('You have successfully logged in.', "success")
                 session['logged_in'] = True
@@ -465,12 +465,17 @@ def alluser():
     #return render_template('users/templates/signup.html')
 
 
+def get_curr_user():
+    if 'email' in session:
+        found_user = [x for x in query_users() if x.email == session['email']][0]
+        return found_user 
+
 
 @app.route('/profile')
 def profile():
     if not g.user:
         return redirect(url_for('login'))
-    return render_template('profile.html', user=get_details())
+    return render_template('profile.html', user=get_curr_user())
 
 
 
