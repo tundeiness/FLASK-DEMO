@@ -15,7 +15,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from sqlalchemy.exc import IntegrityError
-from application.decorators import enforce_auth, prevent_login_signup
+from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
 
 
 # Initialise app
@@ -179,8 +179,8 @@ users_schema = UserSchema(many=True)
 
 
 class SignupForm(Form):
-    first_name = StringField('First_Name', [validators.Length(min=5, max=50)])
-    last_name = StringField('Last_Name', [validators.Length(min=5, max=50)])
+    first_name = StringField('First Name', [validators.InputRequired(), validators.Length(min=5, max=50)])
+    last_name = StringField('Last Name', [validators.Length(min=5, max=50)])
     username = StringField('Username', [validators.Length(min=5, max=50)])
     email = StringField('Email', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [validators.DataRequired(),
@@ -388,6 +388,17 @@ def before_request():
         found_user = [x for x in query_users() if x.email == session['email']][0]
         g.user = found_user 
 
+
+
+# @app.before_request
+# def current_user():
+#     if session.get('email'):
+#         g.current_user = User.query.get(session['email'])
+#     else:
+#         g.current_user = None
+
+
+
 # USERS lOGIN
 # @app.route('/login', methods=['GET','POST'])
 # def login():
@@ -446,7 +457,7 @@ def login():
 def logout():
     # Removing data from session by setting logged_flag to False.
     session['logged_in'] = False
-    # session.pop('email')
+    session.pop('email', None)
     flash('Logged out!')
     # redirecting to home page
     return redirect(url_for('root'))

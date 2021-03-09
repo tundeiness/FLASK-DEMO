@@ -19,3 +19,14 @@ def prevent_login_signup(fn):
             return redirect(url_for('profile'))
         return fn(*args, **kwargs)
     return wrapper
+
+
+def enforce_correct_user(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        correct_email = kwargs.get('email')
+        if correct_email != session.get('email'):
+            flash('Not Authenticated')
+            return redirect(url_for('profile'))
+        return fn(*args, **kwargs)
+    return wrapper
