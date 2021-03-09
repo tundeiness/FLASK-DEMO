@@ -445,7 +445,7 @@ def login():
             else:
                 flash('Invalid Credentials')
                 return redirect(url_for('login'))
-    flash('Invalid Credentials')
+    flash('your records does not exist. Sign up to log in')
     return render_template('login.html', form = form)
         # if check_user:
         #     return render_template('users/templates/profile.html', user=username)

@@ -12,11 +12,11 @@
 <body onload="brython(1)">
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <ul class=flashes>
+            <!-- <ul class=flashes> -->
             {% for message in messages %}
-                <li>{{ message }}</li>
+                <p>{{ message }}</p>
             {% endfor %}
-            </ul>
+            <!-- </ul> -->
         {% endif %}
     {% endwith %}
     {% block body %} {% endblock %}
