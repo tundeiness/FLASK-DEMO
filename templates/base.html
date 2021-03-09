@@ -10,7 +10,15 @@
     {%block head%} {%endblock%}
 </head>
 <body onload="brython(1)">
-    {% include 'includes/_messages.html' %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class=flashes>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     {% block body %} {% endblock %}
     <script type=”text/python” src=”script/program.py”></script>
 </body>

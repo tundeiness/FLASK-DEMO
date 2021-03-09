@@ -13,7 +13,7 @@ from sqlite3 import Error
 import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from wtforms import Form, StringField, TextAreaField, PasswordField, BooleanField, validators
 from sqlalchemy.exc import IntegrityError
 from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
 
@@ -194,6 +194,7 @@ class LoginForm(Form):
     email = StringField("Email", validators=[validators.Length(min=6, max=50), 
     validators.DataRequired(message="Please Fill This Field")])
     password = PasswordField("Password", validators=[validators.DataRequired(message="Please Fill This Field")])
+    remember = BooleanField('remember me')
     # password = PasswordField('Password', [validators.DataRequired(),
     # validators.EqualTo('confirm', message='Password do not match')])
 
@@ -261,6 +262,7 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             flash('Sign up successful')
+            # return '<p>Sign up successful</p>'
             return redirect(url_for('profile'))
         except IntegrityError:
             flash('Details already exists')
@@ -443,6 +445,7 @@ def login():
             else:
                 flash('Invalid Credentials')
                 return redirect(url_for('login'))
+    flash('Invalid Credentials')
     return render_template('login.html', form = form)
         # if check_user:
         #     return render_template('users/templates/profile.html', user=username)
@@ -458,6 +461,7 @@ def logout():
     # Removing data from session by setting logged_flag to False.
     session['logged_in'] = False
     session.pop('email', None)
+    # from Ipython import embed; embed()
     flash('Logged out!')
     # redirecting to home page
     return redirect(url_for('root'))
@@ -560,11 +564,10 @@ def add_travel_permit():
         return travel_permit_schema.jsonify(new_travel_permit)
 
 # Get all permits
-
 @app.route('/travel-permit', methods=['GET'])
 def get_travel_permits():
-    home = request.args.get('home')
     # destination_query_params = request.args.get('destination')
+    home = request.args.get('home')
     if home is not None:
         conn = sqlite3.connect('tour.db')
         cur = conn.cursor()
