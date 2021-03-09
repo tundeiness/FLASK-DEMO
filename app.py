@@ -15,7 +15,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from sqlalchemy.exc import IntegrityError
-from application.decorators import enforce_auth
+from application.decorators import enforce_auth, prevent_login_signup
 
 
 # Initialise app
@@ -247,6 +247,7 @@ def query_users():
 
 
 @app.route('/signup', methods=['GET','POST'])
+@prevent_login_signup
 def signup():
     form = SignupForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -405,6 +406,7 @@ def before_request():
 
 
 @app.route('/login', methods=['GET','POST'])
+@prevent_login_signup
 def login():
     # Creating Login form object
     form = LoginForm(request.form)
@@ -444,6 +446,8 @@ def login():
 def logout():
     # Removing data from session by setting logged_flag to False.
     session['logged_in'] = False
+    # session.pop('email')
+    flash('Logged out!')
     # redirecting to home page
     return redirect(url_for('root'))
 

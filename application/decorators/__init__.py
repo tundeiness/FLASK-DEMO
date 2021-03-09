@@ -9,3 +9,13 @@ def enforce_auth(fn):
             return redirect(url_for('login'))
         return fn(*args, **kwargs)
     return wrapper #return inner function
+
+
+def prevent_login_signup(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if session.get('email'):
+            flash("your are currently logged in")
+            return redirect(url_for('profile'))
+        return fn(*args, **kwargs)
+    return wrapper
