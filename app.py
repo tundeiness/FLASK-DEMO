@@ -15,6 +15,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from sqlalchemy.exc import IntegrityError
+from application.decorators import enforce_auth
 
 
 # Initialise app
@@ -151,6 +152,16 @@ def __init__(self,first_name, last_name, username, email, password):
     self.email = email
     self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
+
+@classmethod
+def authenticate(cls, email,password):
+    user = cls.query.filter_by(email = email).first()
+    if user:
+        is_authenticated = bcrypt.check_password_hash(user.password, password)
+        if is_authenticated:
+            return user
+    return False
+
 def __repr__(self):
     return f'<User: {self.username}>' 
 
@@ -228,6 +239,13 @@ def query_users():
     return users
 
 
+# @enforce_auth
+# @app.route('/signup')
+# def index():
+#     return render_template('index.html', users=User.query.all())
+#     pass
+
+
 @app.route('/signup', methods=['GET','POST'])
 def signup():
     form = SignupForm(request.form)
@@ -237,11 +255,15 @@ def signup():
         username = form.username.data
         email = form.email.data
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
-        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        flash('Sign up successful', 'success')
-        return redirect(url_for('profile'))
+        try:
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Sign up successful')
+            return redirect(url_for('profile'))
+        except IntegrityError:
+            flash('Details already exists')
+            return render_template('register.html', form=form)
     return render_template('register.html', form=form)
     #     session.pop('user_id', None)
     #     username = request.form.get('username')
@@ -393,20 +415,20 @@ def login():
         # user = User.query.filter_by(email = form.email.data).first()
         if user:
              # if user exist in database than we will compare our 
-             # database hased password and password come from login form 
+             # database hashed password and password come from login form 
             authenticated_user = bcrypt.check_password_hash(user.password, form.password.data)
             if authenticated_user:
                 # if password is matched, allow user to access and 
                 # save email and username inside the session 
                 # return 'Logged in!!'
-                flash('You have successfully logged in.', "success")
+                flash('You have successfully logged in.')
                 session['logged_in'] = True
                 session['email'] = user.email 
                 session['username'] = user.username
                 # After successful login, redirecting to home page
                 return redirect(url_for('profile'))
             else:
-                flash('Wrong Username or Password', "Danger")
+                flash('Invalid Credentials')
                 return redirect(url_for('login'))
     return render_template('login.html', form = form)
         # if check_user:

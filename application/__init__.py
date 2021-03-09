@@ -12,7 +12,7 @@ import sqlite3
 from enum import Enum
 from sqlite3 import Error
 import json
-from flask_modus import Modus
+# from flask_modus import Modus
 
 
 
