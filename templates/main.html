@@ -19,6 +19,11 @@
 
 {% block body %}
     <h1>Home Page</h1>
+    <form action="" method="POST">
+        <p>
+            {{form.country.label}} {{form.country (size=170)}}
+        </p>
+      </form>
     
     <div class="auth-wrapper">
         <a href="{{url_for('signup')}}">Sign up</a>

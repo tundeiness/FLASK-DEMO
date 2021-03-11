@@ -13,11 +13,13 @@ from sqlite3 import Error
 import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
-from wtforms import Form, StringField, TextAreaField, PasswordField, BooleanField, validators
+from wtforms import Form, StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField
 from sqlalchemy.exc import IntegrityError
 from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
+from country import COUNTRY
+
 
 
 # Initialise app
@@ -203,16 +205,31 @@ class LoginForm(Form):
 
 
 
-class CountryChoice(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
+# class CountrySelectField(SelectField):
+#     def __init__(self, *args, **kwargs):
+#         super(CountrySelectField, self).__init__(*args, **kwargs)
+#         self.choices = [(country.alpha_2, country.name) for country in pycountry.countries]
+
+# class Country(db.Model):
+#     __tablename__ = 'country'
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(128), nullable=False)
 
 
-def country_query():
-    return CountryChoice.query
+# # constructor
+# def __init__(self, name):
+#     self.name = name
 
-class CountryForm(FlaskForm):
-    opts=QuerySelectField(query_factory=country_query, allow_blank=True, get_label='name')
+
+
+class CountryForm(Form):  
+    country = SelectField(label='Country', choices=COUNTRY)
+
+# def country_query():
+#     return Country.query
+
+# class CountryForm(FlaskForm):
+#     opts=QuerySelectField(query_factory=country_query, allow_blank=True, get_label='name')
 
 
 # @app.route('/users', methods=['GET', 'POST'])
@@ -528,11 +545,16 @@ def get_curr_user():
         return found_user 
 
 
+
+# class CountryForm(Form):
+#     country = SelectField(label='Country', choice=COUNTRY)
+
 @app.route('/profile')
 def profile():
+    form = CountryForm(request.form)
     if not g.user:
         return redirect(url_for('login'))
-    return render_template('profile.html', user=get_curr_user())
+    return render_template('profile.html', user=get_curr_user(), form=form)
 
 
 
@@ -560,7 +582,8 @@ def profile():
 # define route
 @app.route('/')
 def root():
-    return render_template('main.html')
+    form = CountryForm(request.form)
+    return render_template('main.html', form=form)
     # return redirect(url_for('signup'))
     # return Path('index.html').read_bytes();
 
@@ -773,6 +796,11 @@ def main():
                                         reg_date text
                                     ); """
 
+    # sql_create_country_table = """ CREATE TABLE IF NOT EXISTS country (
+    #                                     id integer PRIMARY KEY,
+    #                                     name string NOT NULL,
+    #                                 ); """
+
     # sql_create_traveller_table = """CREATE TABLE IF NOT EXISTS tasks (
     #                                 id integer PRIMARY KEY,
     #                                 name text NOT NULL,
@@ -797,6 +825,8 @@ def main():
         create_table(conn, sql_create_travel_permit_table)
         # create users table
         create_table(conn, sql_create_users_table)
+        # create country table
+        # create_table(conn, sql_create_country_table)
 
         # create tasks table
         # create_table(conn, sql_create_traveller_table)
@@ -805,6 +835,13 @@ def main():
 
 
 
+# def populate_country():
+#     conn = sqlite3.connect('tour.db')
+#     cursor = conn.cursor()
+#     # sqlstmt = """INSERT INTO country (name) VALUES (?)"""
+#     # values = [(1,7,3000),(1,8,3500),(1,9,3900)]
+#     listing = country.country
+#     cursor.execute("INSERT INTO country (name) VALUES (?)", listing)
 
 
 # User
@@ -1000,5 +1037,6 @@ def getrequest():
 # Run Server
 if __name__ == '__main__':
     main()
+    # country.populate_country()
     app.run(host='0.0.0.0',port=5005, debug=True)
      

@@ -8,6 +8,11 @@
   <h1 class="title">
       Welcome, {{g.user.username}} 
   </h1>
+  <form action="" method="POST">
+    <p>
+        {{form.country.label}} {{form.country (size=170)}}
+    </p>
+  </form>
   <div class="auth-wrapper">
     <a href="{{url_for('logout')}}">Log out</a>
 </div>
