@@ -478,7 +478,7 @@ def login():
             else:
                 flash('Invalid Credentials')
                 return redirect(url_for('login'))
-    flash('your records does not exist. Sign up to log in')
+        flash('your records does not exist. Sign up to log in')
     return render_template('login.html', form = form)
         # if check_user:
         #     return render_template('users/templates/profile.html', user=username)
@@ -580,9 +580,13 @@ def profile():
 
 
 # define route
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def root():
     form = CountryForm(request.form)
+    if request.method == 'POST' and form.validate():
+        # selection = dict(form.country.choices).get(form.country.data)
+        session['country'] = form.country.data
+        # print(session.get('country'))
     return render_template('main.html', form=form)
     # return redirect(url_for('signup'))
     # return Path('index.html').read_bytes();

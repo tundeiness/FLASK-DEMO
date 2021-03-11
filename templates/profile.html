@@ -9,9 +9,10 @@
       Welcome, {{g.user.username}} 
   </h1>
   <form action="" method="POST">
-    <p>
-        {{form.country.label}} {{form.country (size=170)}}
-    </p>
+    <fieldset>
+        {{form.country.label}} 
+        {{form.country (size=170)}}
+    </fieldset>
   </form>
   <div class="auth-wrapper">
     <a href="{{url_for('logout')}}">Log out</a>
