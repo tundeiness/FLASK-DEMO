@@ -27,8 +27,9 @@
       </form> -->
 
       <form action="" method="POST">
-        <input type="text" list="airports"> 
-        <datalist id="airports">
+        <h4>{{form.country.label}} </h4>
+        <input type="text" list="countries"> 
+        <datalist id="countries">
             {% for x in form.country %}
                 <option>{{x}}</option>
             {%endfor%}
