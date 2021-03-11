@@ -16,6 +16,8 @@ from flask_bcrypt import Bcrypt
 from wtforms import Form, StringField, TextAreaField, PasswordField, BooleanField, validators
 from sqlalchemy.exc import IntegrityError
 from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
+from flask_wtf import FlaskForm
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 
 # Initialise app
@@ -197,6 +199,13 @@ class LoginForm(Form):
     remember = BooleanField('remember me')
     # password = PasswordField('Password', [validators.DataRequired(),
     # validators.EqualTo('confirm', message='Password do not match')])
+
+
+
+
+class CountryChoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
 
 
 # @app.route('/users', methods=['GET', 'POST'])
