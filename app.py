@@ -208,6 +208,13 @@ class CountryChoice(db.Model):
     name = db.Column(db.String(100))
 
 
+def country_query():
+    return CountryChoice.query
+
+class CountryForm(FlaskForm):
+    opts=QuerySelectField(query_factory=country_query, allow_blank=True, get_label='name')
+
+
 # @app.route('/users', methods=['GET', 'POST'])
 # def sign_up():
 #     if request.method == 'POST':
