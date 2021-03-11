@@ -19,10 +19,26 @@
 
 {% block body %}
     <h1>Home Page</h1>
-    <form action="" method="POST">
-        <p>
-            {{form.country.label}} {{form.country (size=170)}}
-        </p>
+    <!-- <form action="" method="POST">
+        {{form.country.label}} 
+        <select>
+            <option value=form.country>{{form.country (size=170)}}</option>
+        </select>
+      </form> -->
+
+      <form action="" method="POST">
+        <input type="text" list="airports"> 
+        <datalist id="airports">
+            {% for x in form.country %}
+                <option>{{x}}</option>
+            {%endfor%}
+            <!-- <option>{{form.country}}</option> -->
+          <!-- <option value="Berlin">
+          <option value="Los Angeles">
+          <option value="Moscow">
+          <option value="Paris"> -->
+        </datalist>
+        <input type="submit" value="confirm">
       </form>
     
     <div class="auth-wrapper">

@@ -585,6 +585,7 @@ def root():
     form = CountryForm(request.form)
     if request.method == 'POST' and form.validate():
         # selection = dict(form.country.choices).get(form.country.data)
+        print(form.country.data) 
         session['country'] = form.country.data
         # print(session.get('country'))
     return render_template('main.html', form=form)
