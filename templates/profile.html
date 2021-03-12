@@ -8,12 +8,15 @@
   <h1 class="title">
       Welcome, {{g.user.username}} 
   </h1>
-  <form action="" method="POST">
-    <fieldset>
-        {{form.country.label}} 
-        {{form.country (size=170)}}
-    </fieldset>
+  <form method="POST" action="{{ url_for('submit') }}">
+     <select name="country_select">
+       {% for x in form.country %}
+           <option>{{ x }}</option>
+       {% endfor %}                                              
+     </select>
+     <button type="submit" >Go</button>
   </form>
+ <p>{{select}}</p>
   <div class="auth-wrapper">
     <a href="{{url_for('logout')}}">Log out</a>
 </div>

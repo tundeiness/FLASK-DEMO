@@ -26,21 +26,16 @@
         </select>
       </form> -->
 
-      <form action="" method="POST">
-        <h4>{{form.country.label}} </h4>
-        <input type="text" list="countries"> 
-        <datalist id="countries">
+      <form method="POST" action="{{ url_for('submit') }}">
+         <select name="country_select">
             {% for x in form.country %}
-                <option>{{x}}</option>
-            {%endfor%}
-            <!-- <option>{{form.country}}</option> -->
-          <!-- <option value="Berlin">
-          <option value="Los Angeles">
-          <option value="Moscow">
-          <option value="Paris"> -->
-        </datalist>
-        <input type="submit" value="confirm">
+                <option>{{ x }}</option>
+            {% endfor %}                                              
+          </select>
+          <!-- <input type="submit" value="confirm"> -->
+          <button type="submit" >Go</button>
       </form>
+      <p>{{select}}</p>
     
     <div class="auth-wrapper">
         <a href="{{url_for('signup')}}">Sign up</a>

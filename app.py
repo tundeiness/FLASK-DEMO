@@ -578,19 +578,46 @@ def profile():
 #     def __repr__(self):
 #         return 'Blog post ' + str(self.id) 
 
-
-# define route
-@app.route('/', methods=['GET','POST'])
-def root():
+@app.route('/submit', methods=['POST'])
+def submit():
     form = CountryForm(request.form)
+    first = request.form.get('country_select')
+    test = 'you are in ' + first
     if request.method == 'POST' and form.validate():
-        # selection = dict(form.country.choices).get(form.country.data)
-        print(form.country.data) 
-        session['country'] = form.country.data
+        select = request.form.get('country_select')
+        session['country'] = select
+        # data = (str(select))
+        return session.get('country')
+        # return data
+        # return render_template('main.html', form=form, data=first)
         # print(session.get('country'))
-    return render_template('main.html', form=form)
+    return render_template('main.html', form=form, select=test)
     # return redirect(url_for('signup'))
     # return Path('index.html').read_bytes();
+
+
+
+# define route
+@app.route('/', methods=['GET'])
+def root():
+    form = CountryForm(request.form)
+    return render_template('main.html', form=form)
+    # form = CountryForm(request.form)
+    # first = request.form.get('country_select')
+    # if request.method == 'POST' and form.validate():
+    #     # selection = dict(form.country.choices).get(form.country.data)
+    #     first = form.country.data
+    #     select = request.form.get('value')
+    #     # select = request.form['value']
+    #     print(select) 
+    #     session['country'] = select
+    #     data = (str(select))
+    #     # return data
+    #     # return render_template('main.html', form=form, data=first)
+    #     # print(session.get('country'))
+    # return render_template('main.html', form=form, select=first)
+    # # return redirect(url_for('signup'))
+    # # return Path('index.html').read_bytes();
 
 
 # Create a Permit
