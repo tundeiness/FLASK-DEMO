@@ -560,6 +560,31 @@ def profile():
 
 
 
+# @app.route('/profile-submit', methods=['POST'])
+# def submit():
+#     form = CountryForm(request.form)
+#     first = request.form.get('country_select')
+#     sentence = 'you are in ' + first
+#     if request.method == 'POST' and form.validate():
+#         prev_session = session.get('country')
+#         if prev_session is not None:
+#             session['country'] = first
+#             # save the value to users record
+#             # commit database
+#         select = request.form.get('country_select')
+#         session['country'] = select
+#         # data = (str(select))
+#         return session.get('country')
+#         # return data
+#         # return render_template('main.html', form=form, data=first)
+#         # print(session.get('country'))
+#     return render_template('profile.html', form=form, select=sentence)
+#     # return redirect(url_for('signup'))
+#     # return Path('index.html').read_bytes();
+
+
+
+
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres'
 
@@ -579,11 +604,31 @@ def profile():
 #     def __repr__(self):
 #         return 'Blog post ' + str(self.id) 
 
-@app.route('/submit', methods=['POST'])
-def submit():
+# @app.route('/submit', methods=['POST'])
+# def submit():
+#     form = CountryForm(request.form)
+#     first = request.form.get('country_select')
+#     sentence = 'you are in ' + first
+#     if request.method == 'POST' and form.validate():
+#         select = request.form.get('country_select')
+#         session['country'] = select
+#         # data = (str(select))
+#         return session.get('country')
+#         # return data
+#         # return render_template('main.html', form=form, data=first)
+#         # print(session.get('country'))
+#     return render_template('main.html', form=form, select=sentence)
+#     # return redirect(url_for('signup'))
+#     # return Path('index.html').read_bytes();
+
+
+
+# define route
+@app.route('/', methods=['GET', 'POST'])
+def root():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
-    sentence = 'you are in ' + first
+    sentence = 'you are in ' + str(first)
     if request.method == 'POST' and form.validate():
         select = request.form.get('country_select')
         session['country'] = select
@@ -593,16 +638,8 @@ def submit():
         # return render_template('main.html', form=form, data=first)
         # print(session.get('country'))
     return render_template('main.html', form=form, select=sentence)
-    # return redirect(url_for('signup'))
-    # return Path('index.html').read_bytes();
 
 
-
-# define route
-@app.route('/', methods=['GET'])
-def root():
-    form = CountryForm(request.form)
-    return render_template('main.html', form=form)
     # form = CountryForm(request.form)
     # first = request.form.get('country_select')
     # if request.method == 'POST' and form.validate():
@@ -826,7 +863,7 @@ def main():
                                         username string NOT NULL UNIQUE,
                                         email string NOT NULL,
                                         password text NOT NULL,
-                                        country string NULL,
+                                        country string,
                                         reg_date text
                                     ); """
 
