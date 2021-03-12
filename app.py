@@ -146,6 +146,7 @@ class User(db.Model):
     username = db.Column(db.String(128), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=False)
     password = db.Column(db.Text, nullable=False)
+    country = db.Column(db.String(128), nullable=True)
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
@@ -825,6 +826,7 @@ def main():
                                         username string NOT NULL UNIQUE,
                                         email string NOT NULL,
                                         password text NOT NULL,
+                                        country string NULL,
                                         reg_date text
                                     ); """
 
