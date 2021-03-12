@@ -582,7 +582,7 @@ def profile():
 def submit():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
-    test = 'you are in ' + first
+    sentence = 'you are in ' + first
     if request.method == 'POST' and form.validate():
         select = request.form.get('country_select')
         session['country'] = select
@@ -591,7 +591,7 @@ def submit():
         # return data
         # return render_template('main.html', form=form, data=first)
         # print(session.get('country'))
-    return render_template('main.html', form=form, select=test)
+    return render_template('main.html', form=form, select=sentence)
     # return redirect(url_for('signup'))
     # return Path('index.html').read_bytes();
 
