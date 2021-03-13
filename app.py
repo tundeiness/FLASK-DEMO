@@ -1,5 +1,5 @@
 import os
-from flask import Flask,render_template, request, jsonify, url_for, redirect, session, g, flash
+from flask import Flask,render_template, request, jsonify, url_for, redirect, session, g, flash, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -547,15 +547,50 @@ def get_curr_user():
 
 
 
+# def update_users():
+#     if enforce_correct_user:
+#         form = CountryForm(request.form)
+#         first = request.form.get('country_select')
+#         conn = sqlite3.connect('tour.db')
+#         cur = conn.cursor()
+#         email =  session.get('email')
+#         cur.execute('''UPDATE users SET country = ? WHERE email = ?''', (first, get_curr_user().email))
+#         conn.commit()
+#         conn.close()
+
 # class CountryForm(Form):
 #     country = SelectField(label='Country', choice=COUNTRY)
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
 def profile():
     form = CountryForm(request.form)
+    first = request.form.get('country_select')
     if not g.user:
         return redirect(url_for('login'))
-    return render_template('profile.html', user=get_curr_user(), form=form)
+    else:
+        if request.method == 'POST' and form.validate():
+            try:
+                with sqlite3.connect("tour.db") as con:
+                    cur = con.cursor()
+                    cur.execute("INSERT INTO users (country) VALUE (?)",(first) )
+                    con.commit()
+                    flash("Record successfully added")
+            except:
+                con.rollback()
+                flash("error in insert operation")
+            
+            finally:
+                return render_template("profile.html", msg = first)
+                con.close()
+    return render_template('profile.html', user=get_curr_user(), form=form, country=first)
+
+
+                # """
+                #     UPDATE users
+                #     SET country = res_str
+                #     WHERE email = email;
+                # """
+    # return render_template('profile.html', user=get_curr_user(), form=form)
 
 
 
@@ -629,9 +664,12 @@ def root():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
     sentence = 'you are in ' + str(first)
+    res = make_response()
     if request.method == 'POST' and form.validate():
         select = request.form.get('country_select')
         session['country'] = select
+        res.set_cookie('country', first)
+        # nu_country = request.cookies.get('country')
         # data = (str(select))
         return session.get('country')
         # return data
@@ -841,6 +879,21 @@ def create_table(conn, create_table_sql):
         print(e)
 
 
+def update_task(conn, task):
+    """
+    update priority, begin_date, and end date of a task
+    :param conn:
+    :param task:
+    :return: project id
+    """
+    sql = ''' UPDATE users
+              SET country = ? ,
+              WHERE email = ?'''
+    cur = conn.cursor()
+    cur.execute(sql, task)
+    conn.commit()
+
+
 
 
 def main():
@@ -882,7 +935,7 @@ def main():
     #                                 end_date text NOT NULL,
     #                                 FOREIGN KEY (project_id) REFERENCES projects (id)
     #                             );"""
-
+    
 
 
 
@@ -896,6 +949,7 @@ def main():
         create_table(conn, sql_create_travel_permit_table)
         # create users table
         create_table(conn, sql_create_users_table)
+
         # create country table
         # create_table(conn, sql_create_country_table)
 
