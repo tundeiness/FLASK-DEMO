@@ -9,12 +9,14 @@
       Welcome, {{g.user.username}} 
   </h1>
   <form method="POST" action="{{ url_for('profile') }}">
+    {{ form.hidden_tag() }}
      <select name="country_select">
        {% for x in form.country %}
            <option>{{ x }}</option>
        {% endfor %}                                              
      </select>
-     <button type="submit" >Go</button>
+     <!-- <input type="submit" value="submit"> -->
+     {{ form.submit }}
   </form>
  <!-- <p>{{select}}</p> -->
  <p>{{country}}</p>

@@ -1,3 +1,4 @@
+from __future__ import print_function # In python 2.7
 import os
 from flask import Flask,render_template, request, jsonify, url_for, redirect, session, g, flash, make_response
 from flask_sqlalchemy import SQLAlchemy
@@ -13,12 +14,14 @@ from sqlite3 import Error
 import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
-from wtforms import Form, StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField
+from flask_wtf import Form #now FlaskForm
+from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
 from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
+import sys
 
 
 
@@ -225,6 +228,7 @@ class LoginForm(Form):
 
 class CountryForm(Form):  
     country = SelectField(label='Country', choices=COUNTRY)
+    submit = SubmitField("Submit")
 
 # def country_query():
 #     return Country.query
@@ -560,28 +564,60 @@ def get_curr_user():
 
 # class CountryForm(Form):
 #     country = SelectField(label='Country', choice=COUNTRY)
+# def data_entry():
+#     if g.user:
+#         form = CountryForm(request.form)
+#         first = request.form.get('country_select')
+#         conn = sqlite3.connect('tour.db') 
+#         c = conn.cursor()
+#         c.execute("INSERT INTO users (country) VALUES (?)",(first) )
+#         conn.commit() 
+
+
+# @event.listen(User.__table__, 'after_create',
+#             DDL(""" INSERT INTO users (email, country) VALUES (1, 'low') """))
+
+
+
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
+    print(first, flush=True)
     if not g.user:
         return redirect(url_for('login'))
     else:
-        if request.method == 'POST' and form.validate():
-            try:
-                with sqlite3.connect("tour.db") as con:
-                    cur = con.cursor()
-                    cur.execute("INSERT INTO users (country) VALUE (?)",(first) )
-                    con.commit()
-                    flash("Record successfully added")
-            except:
-                con.rollback()
-                flash("error in insert operation")
-            
-            finally:
-                return render_template("profile.html", msg = first)
-                con.close()
+        print(g.user.id)
+        cond = form.validate()
+        print(cond, flush=True)
+        if request.method == 'POST':
+            # import IPython
+            # IPython.embed(first)
+            # c = User(country=first)
+            # db.session.add(c)
+            # db.session.commit()
+            # db.session.execute('UPDATE users SET country = ? WHERE country = ?', (first, None))
+            # db.commit()
+            # try:
+            #     with sqlite3.connect("tour.db") as con:
+            #         cur = con.cursor()
+            #         print("Opened database successfully")
+            #         # cur.execute('''INSERT INTO users (email, country) VALUES (g.user.email, first) ''')
+            #         # cur.execute("INSERT INTO users (country) VALUE (?)",(first) )
+            #         cur.execute('''UPDATE users SET country = ? WHERE country = ?''', (first,""))
+            #         con.commit()
+            #     flash("Record successfully added")
+            # except:
+            #     con.rollback()
+            #     flash("error in insert operation")
+            # finally:
+                new_rec = User.query.filter_by(email=g.user.email).first()
+                new_rec.country = first
+                db.session.commit()
+                flash("Record successfully added")
+                return render_template("profile.html", msg = first, form=form)
+                # con.close()
     return render_template('profile.html', user=get_curr_user(), form=form, country=first)
 
 
