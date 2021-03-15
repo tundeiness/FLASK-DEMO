@@ -21,6 +21,7 @@ from application.decorators import enforce_auth, prevent_login_signup, enforce_c
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
+from restrict import RESTRICTION_TYPE
 import sys
 
 
@@ -246,6 +247,13 @@ class CountryForm(Form):
 #         email = request.form.get('email')
 #         password = request.form.get('password')
 
+
+class TravelPermitForm(Form):
+    home = StringField('Country From', [validators.InputRequired(), validators.Length(min=5, max=50)])
+    destination = StringField('Country To', [validators.InputRequired(), validators.Length(min=5, max=50)])
+    visa = SelectField(label='Visa Requirement', choices=RESTRICTION_TYPE)
+    quarantine = SelectField(label='Covid Testing', choices=RESTRICTION_TYPE)
+    submit = SubmitField("Submit")
 
 
 
@@ -616,7 +624,7 @@ def profile():
                 new_rec.country = first
                 db.session.commit()
                 flash("Record successfully added")
-                return render_template("profile.html", msg = first, form=form)
+                return render_template("profile.html", msg = first, form=form, country=first)
                 # con.close()
     return render_template('profile.html', user=get_curr_user(), form=form, country=first)
 
@@ -707,6 +715,8 @@ def root():
         res.set_cookie('country', first)
         # nu_country = request.cookies.get('country')
         # data = (str(select))
+        # first = session.get('country')
+        # print(res.get_cookie('country'), flush=True)
         return session.get('country')
         # return data
         # return render_template('main.html', form=form, data=first)
@@ -835,6 +845,28 @@ def update_travel_permit(id_):
 
 
 
+
+# Update a Permit
+
+# @app.route('/travel-permit/<id_>', methods=['PUT'])
+# def update_travel_permit(id_):
+#     permit = TravelPermit.query.get_or_404(id_)
+#     if request.method == 'PUT':
+#         take_off_location = request.json['home']
+#         travel_destination = request.json['destination']
+#         visa = request.json['visa']
+#         quarantine = request.json['quarantine']
+
+#         permit.home = take_off_location
+#         permit.destination = travel_destination
+#         permit.visa = visa
+#         permit.quarantine = quarantine
+
+#         db.session.commit()
+#         return travel_permit_schema.jsonify(permit)
+
+
+
 # Get Delete permit
 
 @app.route('/travel-permit/<id_>', methods=['DELETE'])
@@ -913,22 +945,6 @@ def create_table(conn, create_table_sql):
         c.execute(create_table_sql)
     except Error as e:
         print(e)
-
-
-def update_task(conn, task):
-    """
-    update priority, begin_date, and end date of a task
-    :param conn:
-    :param task:
-    :return: project id
-    """
-    sql = ''' UPDATE users
-              SET country = ? ,
-              WHERE email = ?'''
-    cur = conn.cursor()
-    cur.execute(sql, task)
-    conn.commit()
-
 
 
 
@@ -1198,6 +1214,5 @@ def getrequest():
 # Run Server
 if __name__ == '__main__':
     main()
-    # country.populate_country()
     app.run(host='0.0.0.0',port=5005, debug=True)
      
