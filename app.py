@@ -249,8 +249,8 @@ class CountryForm(Form):
 
 
 class TravelPermitForm(Form):
-    home = StringField('Country From', [validators.InputRequired(), validators.Length(min=5, max=50)])
-    destination = StringField('Country To', [validators.InputRequired(), validators.Length(min=5, max=50)])
+    home = SelectField(label='Country From', choices=COUNTRY)
+    destination = SelectField(label='Country To', choices=COUNTRY)
     visa = SelectField(label='Visa Requirement', choices=RESTRICTION_TYPE)
     quarantine = SelectField(label='Covid Testing', choices=RESTRICTION_TYPE)
     submit = SubmitField("Submit")
