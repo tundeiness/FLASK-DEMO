@@ -141,6 +141,13 @@ travel_permits_schema = TravelPermitSchema(many=True)
 
 
 
+ACCESS = {
+    'guest': 0,
+    'user': 200,
+    'admin': 300
+}
+
+
 # User Class/Model
 class User(db.Model):
     __tablename__ = 'users'
@@ -151,15 +158,22 @@ class User(db.Model):
     email = db.Column(db.String(128), nullable=False)
     password = db.Column(db.Text, nullable=False)
     country = db.Column(db.String(128), nullable=True)
+    access = db.Column(db.String(128), nullable=True, default=ACCESS['guest'])
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
-def __init__(self,first_name, last_name, username, email, password):
+def __init__(self,first_name, last_name, username, email, password, access=ACCESS['guest']):
     self.first_name=  first_name
     self.last_name = last_name
     self.username = username
     self.email = email
     self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+def is_admin(self):
+        return self.access == ACCESS['admin']
+    
+def allowed(self, access_level):
+        return self.access >= access_level
 
 
 @classmethod
@@ -463,7 +477,7 @@ def before_request():
 #     return render_template('login.html')
 
 
-
+# Admin gets redirected to a special Admin template when they log  in
 @app.route('/login', methods=['GET','POST'])
 @prevent_login_signup
 def login():
@@ -542,7 +556,7 @@ def logout():
 
 
 # GET ALL USERS
-
+# get all users if user is Admin
 @app.route('/users', methods=['GET'])
 def alluser():
     all_user = User.query.all()
@@ -746,20 +760,31 @@ def root():
 
 @app.route('/travel-permit', methods=['POST'])
 def add_travel_permit():
+    # accessible to only the admin
+    form = TravelPermitForm(request.form)
     if request.method == 'POST':
-        take_off_location = request.json['home']
-        travel_destination = request.json['destination']
-        visa = request.json['visa']
-        quarantine = request.json['quarantine']
-        new_travel_permit = TravelPermit(home=take_off_location, destination=travel_destination, visa=visa, quarantine=quarantine)
+        hoome = request.form.get('home_select')
+        destination = request.form.get('destination_select')
+        visa = request.form.get('visa_select')
+        quarantine = request.form.get('quarantine_select')
+        new_travel_permit = TravelPermit(home=hoome, destination=destination, visa=visa, quarantine=quarantine)
+        all_permits = TravelPermit.query.all()
         db.session.add(new_travel_permit)
         db.session.commit()
-        return travel_permit_schema.jsonify(new_travel_permit)
+        flash("New permit successfully added")
+        return render_template('index.html', permits=all_permits)
+        # return travel_permit_schema.jsonify(new_travel_permit)
+    else:
+        return render_template('404.html')
+
+
+
 
 # Get all permits
 @app.route('/travel-permit', methods=['GET'])
 def get_travel_permits():
     # destination_query_params = request.args.get('destination')
+    # only admin can have access to all permits
     home = request.args.get('home')
     if home is not None:
         conn = sqlite3.connect('tour.db')
@@ -772,14 +797,14 @@ def get_travel_permits():
     elif home is None:
         all_permits = TravelPermit.query.all()
         result = travel_permits_schema.dump(all_permits)
-        return jsonify(result)
+        return render_template('index.html', permits=all_permits)
+        # return jsonify(result)
     else:
         # resp = jsonify('Traveller "home or destination" not found in query string')
         # resp.status_code = 500
         return 'Not Found'
         conn.commit()
         conn.close()
-
 
 
 
@@ -830,18 +855,21 @@ def get_travel_permit(id_):
 def update_travel_permit(id_):
     permit = TravelPermit.query.get_or_404(id_)
     if request.method == 'PUT':
-        take_off_location = request.json['home']
-        travel_destination = request.json['destination']
-        visa = request.json['visa']
-        quarantine = request.json['quarantine']
+        country_from = request.form.get('home_select')
+        country_to = request.form.get('destination_select')
+        visa = request.form.get('visa_select')
+        quarantine = request.form.get('quarantine_select')
 
-        permit.home = take_off_location
-        permit.destination = travel_destination
+        permit.home = country_from
+        permit.destination = country_to
         permit.visa = visa
         permit.quarantine = quarantine
 
         db.session.commit()
-        return travel_permit_schema.jsonify(permit)
+        flash("Permit successfully edited")
+        all_permits = TravelPermit.query.all()
+        return render_template('index.html', permits=all_permits)
+        # return travel_permit_schema.jsonify(permit)
 
 
 

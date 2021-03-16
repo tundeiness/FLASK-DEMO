@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Flask demo</title>
+{% endblock %}
+
+{% block body %}
+    <h1>All Travel permits listing</h1>
+    <a href="{{url_for('add_travel_permit')}}">Add Permit</a>
+            {% for perms in permits %}
+            <label>From</label>
+                <p>{{ perms.home }}</p>
+            <label>To</label>
+                <p>{{ perms.destination }}</p>
+            {% endfor %}                                              
+    <div class="auth-wrapper">
+        <!-- <a href="{{url_for('add_travel_permit')}}">add new permit</a> -->
+        <!-- <a href="{{url_for('login')}}">Log in</a> -->
+    </div>
+    <img src="{{url_for('static',filename = 'img/vector-world-map.svg')}}" />
+{% endblock %}
+
