@@ -14,7 +14,6 @@ from sqlite3 import Error
 import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
-from flask_wtf import Form #now FlaskForm
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
 from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
@@ -178,7 +177,7 @@ def allowed(self, access):
 
 
 @classmethod
-def authenticate(cls, email,password):
+def authenticate(cls, email, password):
     user = cls.query.filter_by(email = email).first()
     if user:
         is_authenticated = bcrypt.check_password_hash(user.password, password)
@@ -202,18 +201,19 @@ users_schema = UserSchema(many=True)
 
 
 
-class SignupForm(Form):
+class SignupForm(FlaskForm):
     first_name = StringField('First Name', [validators.InputRequired(), validators.Length(min=5, max=50)])
     last_name = StringField('Last Name', [validators.Length(min=5, max=50)])
     username = StringField('Username', [validators.Length(min=5, max=50)])
     email = StringField('Email', [validators.Length(min=6, max=50)])
     password = PasswordField('Password', [validators.DataRequired(),
     validators.EqualTo('confirm', message='Password do not match')])
-    confirm = PasswordField('Confirm Password')
+    confirm = PasswordField('Confirm Password', [validators.DataRequired(),
+    validators.EqualTo('password', message='Password do not match')])
 
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     username = StringField('Username', [validators.Length(min=5, max=50)])
     email = StringField("Email", validators=[validators.Length(min=6, max=50), 
     validators.DataRequired(message="Please Fill This Field")])
@@ -242,7 +242,7 @@ class LoginForm(Form):
 
 
 
-class CountryForm(Form):  
+class CountryForm(FlaskForm):  
     country = SelectField(label='Country', choices=COUNTRY)
     submit = SubmitField("Submit")
 
@@ -263,7 +263,7 @@ class CountryForm(Form):
 #         password = request.form.get('password')
 
 
-class TravelPermitForm(Form):
+class TravelPermitForm(FlaskForm):
     home = SelectField(label='Country From', choices=COUNTRY)
     destination = SelectField(label='Country To', choices=COUNTRY)
     visa = SelectField(label='Visa Requirement', choices=RESTRICTION_TYPE)
@@ -312,7 +312,7 @@ def query_users():
 @prevent_login_signup
 def signup():
     form = SignupForm(request.form)
-    if request.method == 'POST' and form.validate():
+    if request.method == 'POST':
         first_name = form.first_name.data
         last_name = form.last_name.data
         username = form.username.data
@@ -322,16 +322,23 @@ def signup():
         new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, password=password)
         db.session.add(new_user)
         db.session.commit()
+        session['email'] = new_user.email
         flash('Sign up successful')
         return redirect(url_for('profile'))
             # return render_template('profile.html', form=form)
         # except IntegrityError:
         #     flash('Details already exists')
         #     return render_template('register.html')
-    flash('Sign up unsuccessful')
     return render_template('register.html', form=form)
 
 
+
+@app.before_request
+def before_request():
+    g.user = None 
+    if 'email' in session:
+        found_user = [x for x in query_users() if x.email == session['email']][0]
+        g.user = found_user 
 
 
     #     session.pop('user_id', None)
@@ -448,13 +455,13 @@ def signup():
         # self.email = email
         # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
-@app.before_request
-def before_request():
-    g.user = None 
+# @app.before_request
+# def before_request():
+#     g.user = None 
 
-    if 'email' in session:
-        found_user = [x for x in query_users() if x.email == session['email']][0]
-        g.user = found_user 
+#     if 'email' in session:
+#         found_user = [x for x in query_users() if x.email == session['email']][0]
+#         g.user = found_user 
 
 
 
@@ -490,7 +497,7 @@ def login():
     # Creating Login form object
     form = LoginForm(request.form)
     # verifying that method is post and form is valid
-    if request.method == 'POST' and form.validate:
+    if request.method == 'POST' and form.validate():
         # checking that user is exist or not by email
         user = User.query.filter_by(email = form.email.data).first()
         # user = User.query.filter_by(email = form.email.data).first()
@@ -525,9 +532,8 @@ def login():
 @app.route('/logout')
 def logout():
     # Removing data from session by setting logged_flag to False.
-    session['logged_in'] = False
+    # session['logged_in'] = False
     session.pop('email', None)
-    # from Ipython import embed; embed()
     flash('Logged out!')
     # redirecting to home page
     return redirect(url_for('root'))
@@ -614,6 +620,7 @@ def profile():
     first = request.form.get('country_select')
     print(first, flush=True)
     if not g.user:
+        print(g.user)
         return redirect(url_for('login'))
     else:
         print(g.user.id)
