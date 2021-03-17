@@ -5,29 +5,29 @@
     <div class='row-wrapper'>
         <h1>New Permits</h1> 
         {% from 'includes/_formhelpers.html' import render_field %}
-        <form method='POST' action="{{url_for('index')}}">
+        <form method='POST' action="{{url_for('update_travel_permit', id = permits.id)}}">
             {{ form.hidden_tag() }}
             <select name="home_select">
                 {% for x in form.home %}
-                    <option>{{ x }}</option>
+                    <option>{{ permits.home }}</option>
                 {% endfor %}                                              
             </select>
 
             <select name="destination_select">
                 {% for x in form.destination %}
-                    <option>{{ x }}</option>
+                    <option>{{ permits.destination }}</option>
                 {% endfor %}                                              
             </select>
 
             <select name="visa_select">
                 {% for x in form.visa %}
-                    <option>{{ x }}</option>
+                    <option>{{ permits.visa }}</option>
                 {% endfor %}                                              
             </select>
 
             <select name="quarantine_select">
                 {% for x in form.quarantine %}
-                    <option>{{ x }}</option>
+                    <option>{{ permits.quarantine }}</option>
                 {% endfor %}                                              
             </select>
             <p>

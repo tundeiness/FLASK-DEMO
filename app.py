@@ -1,6 +1,6 @@
 from __future__ import print_function # In python 2.7
 import os
-from flask import Flask,render_template, request, jsonify, url_for, redirect, session, g, flash, make_response
+from flask import Flask,render_template, request, jsonify, url_for, redirect, session, g, flash, make_response, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from datetime import datetime
@@ -142,7 +142,6 @@ travel_permits_schema = TravelPermitSchema(many=True)
 
 
 ACCESS = {
-    'guest': 0,
     'user': 200,
     'admin': 300
 }
@@ -158,11 +157,11 @@ class User(db.Model):
     email = db.Column(db.String(128), nullable=False)
     password = db.Column(db.Text, nullable=False)
     country = db.Column(db.String(128), nullable=True)
-    access = db.Column(db.String(128), nullable=True, default=ACCESS['guest'])
+    access = db.Column(db.Integer, nullable=False, default=ACCESS['user'])
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
-def __init__(self,first_name, last_name, username, email, password, access=ACCESS['guest']):
+def __init__(self,first_name, last_name, username, email, password):
     self.first_name=  first_name
     self.last_name = last_name
     self.username = username
@@ -172,8 +171,10 @@ def __init__(self,first_name, last_name, username, email, password, access=ACCES
 def is_admin(self):
         return self.access == ACCESS['admin']
     
-def allowed(self, access_level):
-        return self.access >= access_level
+def allowed(self, access):
+        return self.access >= access
+
+
 
 
 @classmethod
@@ -317,17 +318,22 @@ def signup():
         username = form.username.data
         email = form.email.data
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
-        try:
-            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Sign up successful')
-            # return '<p>Sign up successful</p>'
-            return redirect(url_for('profile'))
-        except IntegrityError:
-            flash('Details already exists')
-            return render_template('register.html', form=form)
+        # try:
+        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Sign up successful')
+        return redirect(url_for('profile'))
+            # return render_template('profile.html', form=form)
+        # except IntegrityError:
+        #     flash('Details already exists')
+        #     return render_template('register.html')
+    flash('Sign up unsuccessful')
     return render_template('register.html', form=form)
+
+
+
+
     #     session.pop('user_id', None)
     #     username = request.form.get('username')
     #     email = request.form.get('email')
@@ -868,10 +874,25 @@ def update_travel_permit(id_):
         db.session.commit()
         flash("Permit successfully edited")
         all_permits = TravelPermit.query.all()
-        return render_template('index.html', permits=all_permits)
+        return render_template('permit-edit.html', permits=permit)
         # return travel_permit_schema.jsonify(permit)
 
 
+@app.route('/travel-permit/<id_>update', methods=['GET', 'POST'])
+# requires admin login
+def update_permit(id_):
+    permit = TravelPermit.query.get_or_404(id_)
+    if is_admin():
+        # do something
+        form = TravelPermitForm(request.form)
+        TravelPermit.home = request.form.get('home_select')
+        TravelPermit.destination = request.form.get('destination_select')
+        TravelPermit.visa = request.form.get('visa_select')
+        TravelPermit.quarantine = request.form.get('quarantine_select')
+        db.session.commit()
+        return render_template('index.html', title='update permit', legend='update permit')
+    else:
+        abort(403)
 
 
 # Update a Permit
@@ -997,6 +1018,7 @@ def main():
                                         email string NOT NULL,
                                         password text NOT NULL,
                                         country string,
+                                        access integer NOT NULL,
                                         reg_date text
                                     ); """
 

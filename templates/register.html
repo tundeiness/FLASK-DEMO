@@ -5,7 +5,8 @@
     <div class='row-wrapper'>
         <h1>Sign Up</h1> 
         {% from 'includes/_formhelpers.html' import render_field %}
-        <form method='POST' action=''>
+        {{form.hidden_tag()}}
+        <form method='POST' action="{{url_for('signup')}}">
             <div class='form-group'>
                 {{render_field(form.first_name, class_='form-control')}}
             </div>
