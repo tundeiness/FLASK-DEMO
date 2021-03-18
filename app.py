@@ -22,11 +22,14 @@ from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
 from restrict import RESTRICTION_TYPE
 import sys
+from middleware import HTTPMethodOverrideMiddleware
+
 
 
 
 # Initialise app
 app = Flask(__name__)
+app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
 app.secret_key = 'formyeyesonlysecretkey'
 basedir = os.path.abspath(os.path.dirname(__file__))
 # app = Flask(__name__, template_folder="templates")
@@ -86,6 +89,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # conn.close()
 
 # modus = Modus(app)
+
 bcrypt = Bcrypt(app)
 
 # initialise database
@@ -160,11 +164,12 @@ class User(db.Model):
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
-def __init__(self,first_name, last_name, username, email, password):
+def __init__(self,first_name, last_name, username, email, password, access=ACCESS['user']):
     self.first_name=  first_name
     self.last_name = last_name
     self.username = username
     self.email = email
+    self.access = access
     self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 def is_admin(self):
@@ -210,6 +215,7 @@ class SignupForm(FlaskForm):
     validators.EqualTo('confirm', message='Password do not match')])
     confirm = PasswordField('Confirm Password', [validators.DataRequired(),
     validators.EqualTo('password', message='Password do not match')])
+    submit = SubmitField('Sign Up')
 
 
 
@@ -219,6 +225,7 @@ class LoginForm(FlaskForm):
     validators.DataRequired(message="Please Fill This Field")])
     password = PasswordField("Password", validators=[validators.DataRequired(message="Please Fill This Field")])
     remember = BooleanField('remember me')
+    submit = SubmitField('Log in')
     # password = PasswordField('Password', [validators.DataRequired(),
     # validators.EqualTo('confirm', message='Password do not match')])
 
@@ -308,6 +315,15 @@ def query_users():
 #     pass
 
 
+
+def check_admin():
+    """
+    Prevent non-admins from accessing the page
+    """
+    if g.user.access < 300:
+        abort(403)
+
+
 @app.route('/signup', methods=['GET','POST'])
 @prevent_login_signup
 def signup():
@@ -318,17 +334,16 @@ def signup():
         username = form.username.data
         email = form.email.data
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
-        # try:
-        new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        session['email'] = new_user.email
-        flash('Sign up successful')
-        return redirect(url_for('profile'))
-            # return render_template('profile.html', form=form)
-        # except IntegrityError:
-        #     flash('Details already exists')
-        #     return render_template('register.html')
+        try:
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, password=password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['email'] = new_user.email
+            flash('Sign up successful')
+            return redirect(url_for('profile'))
+        except IntegrityError:
+            flash('Details already exists')
+            return render_template('register.html')
     return render_template('register.html', form=form)
 
 
@@ -497,28 +512,43 @@ def login():
     # Creating Login form object
     form = LoginForm(request.form)
     # verifying that method is post and form is valid
-    if request.method == 'POST' and form.validate():
+    if request.method == 'POST':
         # checking that user is exist or not by email
         user = User.query.filter_by(email = form.email.data).first()
-        # user = User.query.filter_by(email = form.email.data).first()
-        if user:
-             # if user exist in database than we will compare our 
-             # database hashed password and password come from login form 
-            authenticated_user = bcrypt.check_password_hash(user.password, form.password.data)
-            if authenticated_user:
+        authenticated_user = bcrypt.check_password_hash(user.password, form.password.data)
+        if user and authenticated_user:
+            # if user exist in database than we will compare our 
+            # database hashed password and password come from login form 
+            # authenticated_user = bcrypt.check_password_hash(user.password, form.password.data)
+            flash('You have successfully logged in.')
+            session['logged_in'] = True
+            session['email'] = user.email 
+            session['username'] = user.username
+            # After successful login, redirecting to home page
+            return redirect(url_for('profile'))
+            if user.access >= 300:
                 # if password is matched, allow user to access and 
                 # save email and username inside the session 
                 # return 'Logged in!!'
-                flash('You have successfully logged in.')
+                # flash('You have successfully logged in.')
+                # session['logged_in'] = True
+                # session['email'] = user.email 
+                # session['username'] = user.username
+                # # After successful login, redirecting to home page
+                # return redirect(url_for('profile'))
+                flash('Welcome Admin.')
                 session['logged_in'] = True
                 session['email'] = user.email 
                 session['username'] = user.username
-                # After successful login, redirecting to home page
-                return redirect(url_for('profile'))
+                session['access'] = user.access
+                return redirect(url_for('admin_dashboard'))
             else:
-                flash('Invalid Credentials')
-                return redirect(url_for('login'))
-        flash('your records does not exist. Sign up to log in')
+                # flash('Invalid email or password.')
+                # return redirect(url_for('login'))
+                return redirect(url_for('profile'))
+        # when login details are incorrect        
+        else:
+            flash('Invalid email or password.')
     return render_template('login.html', form = form)
         # if check_user:
         #     return render_template('users/templates/profile.html', user=username)
@@ -613,14 +643,12 @@ def get_curr_user():
 
 
 
-
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
     print(first, flush=True)
     if not g.user:
-        print(g.user)
         return redirect(url_for('login'))
     else:
         print(g.user.id)
@@ -647,14 +675,78 @@ def profile():
             #     con.rollback()
             #     flash("error in insert operation")
             # finally:
-                new_rec = User.query.filter_by(email=g.user.email).first()
-                new_rec.country = first
-                db.session.commit()
-                flash("Record successfully added")
-                return render_template("profile.html", msg = first, form=form, country=first)
-                # con.close()
+            new_rec = User.query.filter_by(email=g.user.email).first()
+            new_rec.country = first
+            db.session.commit()
+            flash("Record successfully added")
+            return render_template("profile.html", msg = first, form=form, country=first)
+            # con.close()
     return render_template('profile.html', user=get_curr_user(), form=form, country=first)
 
+
+
+
+
+
+
+
+
+# @app.route('/profile', methods=['GET', 'POST'])
+# def profile():
+#     form = CountryForm(request.form)
+#     selected_country = request.form.get('country_select')
+#     # print(selected_country, flush=True)
+#     if not g.user:
+#         return redirect(url_for('login'))
+#     else:
+#         print(g.user.id)
+#         cond = form.validate()
+#         print(cond, flush=True)
+#         # user = User.find_by_email(session['email'])
+#         user = User.query.get(session['email'])
+#         if request.method == 'POST' and g.user.access > 200:
+#             new_rec = User.query.filter_by(email=g.user.email).first()
+#             new_rec.country = selected_country
+#             db.session.commit()
+#             flash("Record successfully added")
+#             return render_template("dashboard.html", form=form, country=selected_country)
+#         else:
+#             new_rec = User.query.filter_by(email=g.user.email).first()
+#             new_rec.country = selected_country
+#             db.session.commit()
+#             flash("Record successfully added")
+#             return render_template("profile.html", msg = selected_country, form=form, country=selected_country)
+#     return render_template('profile.html', user=get_curr_user(), form=form, country=selected_country)
+
+
+    # user = User.find_by_email(session['email'])
+    # if not user.is_admin():
+    #     return redirect(url_for('login'))
+    
+    # return render_template('dashboard.html')
+
+
+            # import IPython
+            # IPython.embed(first)
+            # c = User(country=first)
+            # db.session.add(c)
+            # db.session.commit()
+            # db.session.execute('UPDATE users SET country = ? WHERE country = ?', (first, None))
+            # db.commit()
+            # try:
+            #     with sqlite3.connect("tour.db") as con:
+            #         cur = con.cursor()
+            #         print("Opened database successfully")
+            #         # cur.execute('''INSERT INTO users (email, country) VALUES (g.user.email, first) ''')
+            #         # cur.execute("INSERT INTO users (country) VALUE (?)",(first) )
+            #         cur.execute('''UPDATE users SET country = ? WHERE country = ?''', (first,""))
+            #         con.commit()
+            #     flash("Record successfully added")
+            # except:
+            #     con.rollback()
+            #     flash("error in insert operation")
+            # finally:
+                
 
                 # """
                 #     UPDATE users
@@ -664,6 +756,59 @@ def profile():
     # return render_template('profile.html', user=get_curr_user(), form=form)
 
 
+# @app.route('/admin')
+# # @login_required
+# def admin():
+#     user = User.query.filter_by(email=g.user.email).first()
+#     if user.access <= 200:
+#         abort(403)
+#     else:
+#         users = User.query.order_by(User.id).all()
+#         return render_template('admin_view_users.html', users=users)
+#     return redirect(url_for('stocks.watch_list'))
+
+
+
+
+
+
+# @app.route('/admin/dashboard')
+# def admin_dashboard():
+#     # prevent non-admins from accessing the page
+#     if g.user.access < 300:
+#         abort(403)
+
+#     return render_template('admin_dashboard.html', title="Dashboard")
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_dashboard():
+    form = CountryForm(request.form)
+    selected_country = request.form.get('country_select')
+    # print(selected_country, flush=True)
+    if g.user.access < 300:
+        return redirect(url_for('profile'))
+    else:
+        if request.method == 'POST':
+            new_rec = User.query.filter_by(email=g.user.email).first()
+            new_rec.country = selected_country
+            db.session.commit()
+            flash("Record successfully added")
+            return render_template("dashboard.html", form=form, country=selected_country)
+        else:
+            new_rec = User.query.filter_by(email=g.user.email).first()
+            new_rec.country = selected_country
+            db.session.commit()
+            flash("Record successfully added")
+            return render_template("profile.html", msg = selected_country, form=form, country=selected_country)
+    return render_template('profile.html', user=get_curr_user(), form=form, country=selected_country)
+
+
+
+
+# def create_admin():
+#     admin_user = User(email= g.user.email, access=300)
+#     db.session.add(admin_user)
+#     db.session.commit()
 
 
 # @app.route('/profile-submit', methods=['POST'])
@@ -774,6 +919,7 @@ def root():
 @app.route('/travel-permit', methods=['POST'])
 def add_travel_permit():
     # accessible to only the admin
+    check_admin()
     form = TravelPermitForm(request.form)
     if request.method == 'POST':
         hoome = request.form.get('home_select')
@@ -789,6 +935,56 @@ def add_travel_permit():
         # return travel_permit_schema.jsonify(new_travel_permit)
     else:
         return render_template('404.html')
+
+
+
+@app.route('/travel-permits', methods=["GET", "POST"])
+def permits():
+    if request.method == 'POST':
+        new_permit = TravelPermit(home=request.form.get('home_select'), destination=request.form.get('destination_select'), visa=request.form.get('visa_select'), quarantine=request.form.get('quarantine_select'))
+        db.session.add(new_permit)
+        db.session.commit()
+        redirect(url_for('permits'))
+    render_template('permits.html', permits=permits)
+
+
+@app.route('/travel-permits/new', methods=["GET", "POST"])
+def new_permit():
+    render_template('new-permit.html', permits=permits)
+
+
+def find_permit(permit_id):
+    found_permit = [permit for permit in permits if permit.id == permit_id][0]
+    return found_permit
+    # permit = TravelPermit.query.all()
+    # return permit
+
+
+
+@app.route('/travel-permits/<int:id>', methods=["GET", "PATCH", "DELETE"])
+def show_permit(id):
+    found_permit = find_permit(id)
+    if request.method == b'PATCH':
+        found_permit.home = request.form.get('home_select')
+        found_permit.destination = request.form.get('destination_select')
+        found_permit.visa = request.form.get('visa_select')
+        found_permit.quarantine = request.form.get('quarantine_select')
+        return redirect(url_for('permits'))
+    if request.method == b'DELETE':
+        TravelPermit.remove(found_permit)
+        return redirect(url_for('permits'))
+    # found_permit = [permit for permit in permits if permit.id == id][0]
+    # for permit in permits:
+    #     if permit.id == id:
+    #         found_permit = permit
+    # travel_permit = TravelPermit.query.get_or_404(id)
+    return render_template('show_permit.html', permit=found_permit)
+
+
+@app.route('/travel-permits/<int:id>/edit')
+def edit_permit(id):
+    found_permit = find_permit(id)
+    return render_template('edit_permit.html', permit=found_permit)
 
 
 

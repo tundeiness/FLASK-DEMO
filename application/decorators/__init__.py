@@ -30,3 +30,14 @@ def enforce_correct_user(fn):
             return redirect(url_for('profile'))
         return fn(*args, **kwargs)
     return wrapper
+
+
+    
+# def is_admin(access):
+#     @wraps(fn)
+#     def wrapper(*args, **kwargs):
+#         if not session.get('email'):
+#             return redirect(url_for('users.login'))
+
+#         user = User.query.filter_by(email=session['email'])
+        

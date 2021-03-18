@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block body%}
+<h1>See some information about {{permit.home}}</h1>
+<a href="{{url_for('edit_permit', id=permit.id)}}">Edit this Permit!</a>
+
+
+<h2>Delete permit!</h2>
+<form method="POST" action="{{url_for('show_permit', id = permit.id)}}?_method=DELETE">
+    <input type='submit' value='Delete'>
+</form>
+
+    <!-- <div class='row-wrapper'>
+        <h1>Add new Permit!</h1> 
+        {% from 'includes/_formhelpers.html' import render_field %}
+        <form method='POST' action="{{url_for('admin_dashboard')}}">
+            {{ form.hidden_tag() }}
+            <select name="home_select">
+                {% for x in form.home %}
+                    <option>{{ x }}</option> 
+                {% endfor %}                                              
+            </select>
+
+            <select name="destination_select">
+                {% for x in form.destination %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+
+            <select name="visa_select">
+                {% for x in form.visa %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+
+            <select name="quarantine_select">
+                {% for x in form.quarantine %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+            <p>
+                <input type='submit' value='Add Travel Permit'>
+            </p>
+        </form>
+    </div> -->
+{% endblock %}

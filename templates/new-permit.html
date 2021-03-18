@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+
+{% block body%}
+    <div class='row-wrapper'>
+        <h1>Add new Permit!</h1> 
+        {% from 'includes/_formhelpers.html' import render_field %}
+        <form method='POST' action="{{url_for('admin_dashboard')}}">
+            {{ form.hidden_tag() }}
+            <select name="home_select">
+                {% for x in form.home %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+
+            <select name="destination_select">
+                {% for x in form.destination %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+
+            <select name="visa_select">
+                {% for x in form.visa %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+
+            <select name="quarantine_select">
+                {% for x in form.quarantine %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+            <p>
+                <input type='submit' value='Add Travel Permit'>
+            </p>
+        </form>
+    </div>
+{% endblock %}

@@ -3,35 +3,35 @@
 
 {% block body%}
     <div class='row-wrapper'>
-        <h1>New Permits</h1> 
+        <h1>Edit this Permit!</h1> 
         {% from 'includes/_formhelpers.html' import render_field %}
-        <form method='POST' action="{{url_for('update_travel_permit', id = permits.id)}}">
+        <form method='POST' action="{{url_for('show_permit', id = permit.id)}}?_method=PATCH">
             {{ form.hidden_tag() }}
             <select name="home_select">
                 {% for x in form.home %}
-                    <option>{{ permits.home }}</option>
+                    <option value={{permit.home}}>{{ x }}</option>
                 {% endfor %}                                              
             </select>
 
             <select name="destination_select">
                 {% for x in form.destination %}
-                    <option>{{ permits.destination }}</option>
+                    <option value={{permit.destination}}>{{ x }}</option>
                 {% endfor %}                                              
             </select>
 
             <select name="visa_select">
                 {% for x in form.visa %}
-                    <option>{{ permits.visa }}</option>
+                    <option value={{permit.visa}}>{{ x }}</option>
                 {% endfor %}                                              
             </select>
 
             <select name="quarantine_select">
                 {% for x in form.quarantine %}
-                    <option>{{ permits.quarantine }}</option>
+                    <option value={{permit.quarantine}}>{{ x }}</option>
                 {% endfor %}                                              
             </select>
             <p>
-                <input type='submit' value='Submit'>
+                <input type='submit' value='Edit Permit'>
             </p>
         </form>
     </div>
