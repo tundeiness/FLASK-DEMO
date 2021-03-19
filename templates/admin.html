@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+<!-- {% block head %}
+    <title>Profile Page</title>
+{% endblock %} -->
+{% block title %}Admin Dashboard{% endblock %}
+{% block body %}
+<div class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="intro-message">
+                    <h1>Admin Dashboard</h1>
+                    <h3>For administrators only!</h3>
+                    <hr class="intro-divider">
+                    <div>
+                        <p>All Users</p>
+                        {% for user in all_users %}
+                        <label>First-Name</label>
+                            <p>{{ user.first_name }}</p>
+                        <label>Last-Name</label>
+                            <p>{{ user.last_name }}</p>
+                        <label>Email</label>
+                            <p>{{ user.email }}</p>
+                        <label>Date of Registration</label>
+                            <p>{{ user.reg_date }}</p>
+                        {% endfor %}    
+                    </div>
+                    <hr class="intro-divider">
+                    <div>
+                        <div>
+                            {% for permit in all_permits %}
+                                <label>Country from</label>
+                                    <p>{{ permit.home }}</p>
+                                <label>Country to</label>
+                                    <p>{{ permit.destination }}</p>
+                                <label>Visa</label>
+                                    <p>{{ permit.visa }}</p>
+                                <label>Quarantine</label>
+                                    <p>{{ permit.quarantine }}</p>
+                            {% endfor %}   
+                        </div>
+                        <p>
+                            <a href="{{url_for('new_permit')}}">See all permit</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

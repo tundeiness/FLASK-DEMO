@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+
+{% block body%}
+    <div class='row-wrapper'>
+        <h1>All Permits</h1> 
+        <a href="{{url_for('new_permit')}}">Add new permit</a>
+        {% from 'includes/_formhelpers.html' import render_field %}
+        {% for permit in all_permits %}
+            <label>Country from</label>
+                <p>{{ permit.home }}</p>
+            <label>Country to</label>
+                <p>{{ permit.destination }}</p>
+            <label>Visa</label>
+                <p>{{ permit.visa }}</p>
+            <label>Quarantine</label>
+                <p>{{ permit.quarantine }}</p>
+        {% endfor %}   
+    </div>
+{% endblock %}
