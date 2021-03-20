@@ -13,36 +13,17 @@
                     <h3>For administrators only!</h3>
                     <hr class="intro-divider">
                     <div>
-                        <p>All Users</p>
-                        {% for user in all_users %}
-                        <label>First-Name</label>
-                            <p>{{ user.first_name }}</p>
-                        <label>Last-Name</label>
-                            <p>{{ user.last_name }}</p>
-                        <label>Email</label>
-                            <p>{{ user.email }}</p>
-                        <label>Date of Registration</label>
-                            <p>{{ user.reg_date }}</p>
-                        {% endfor %}    
+                        <h3>All Users</h3>
+                        <table>
+                            <thead><tr><th>ID</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Date of Reg</th></tr></thead>
+                            <tbody>
+                                {% for user in all_users %}
+                                    <tr><td>{{user.id}}</td><td>{{ user.first_name }}</td><td>{{ user.last_name }}</td><td>{{ user.email }}</td><td>{{ user.reg_date }}</td></tr>
+                                {% endfor %}    
+                            </tbody>
+                        </table>
                     </div>
                     <hr class="intro-divider">
-                    <div>
-                        <div>
-                            {% for permit in all_permits %}
-                                <label>Country from</label>
-                                    <p>{{ permit.home }}</p>
-                                <label>Country to</label>
-                                    <p>{{ permit.destination }}</p>
-                                <label>Visa</label>
-                                    <p>{{ permit.visa }}</p>
-                                <label>Quarantine</label>
-                                    <p>{{ permit.quarantine }}</p>
-                            {% endfor %}   
-                        </div>
-                        <p>
-                            <a href="{{url_for('new_permit')}}">See all permit</a>
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

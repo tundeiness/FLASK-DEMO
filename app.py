@@ -584,7 +584,7 @@ def login():
                 return redirect(url_for('admin_dashboard'))
             else:
                 session['access'] = user.access
-                return redirect(url_for('profile'))
+                return redirect(url_for('profile', 303))
         else:
             flash('user not found')
             return render_template('login.html', form = form)       
@@ -813,12 +813,13 @@ def profile():
 
 #     return render_template('admin_dashboard.html', title="Dashboard")
 
+
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_dashboard():
     check_admin()
     users = User.query.all()
     permits = TravelPermit.query.all()
-    return render_template("admin.html", all_users=users, all_permits=permits)
+    return render_template("admin.html", all_users=users)
     # form = CountryForm(request.form)
     # selected_country = request.form.get('country_select')
     # if request.method == 'POST':
@@ -975,106 +976,128 @@ def root():
 
 # Create a Permit
 
-@app.route('/travel-permit', methods=['POST'])
-def add_travel_permit():
-    # accessible to only the admin
+# @app.route('/travel-permit', methods=['POST'])
+# def add_travel_permit():
+#     # accessible to only the admin
+#     check_admin()
+#     form = TravelPermitForm(request.form)
+#     if request.method == 'POST':
+#         hoome = request.form.get('home_select')
+#         destination = request.form.get('destination_select')
+#         visa = request.form.get('visa_select')
+#         quarantine = request.form.get('quarantine_select')
+#         new_travel_permit = TravelPermit(home=hoome, destination=destination, visa=visa, quarantine=quarantine)
+#         all_permits = TravelPermit.query.all()
+#         db.session.add(new_travel_permit)
+#         db.session.commit()
+#         flash("New permit successfully added")
+#         return render_template('admin.html', all_permits=all_permits)
+#         # return travel_permit_schema.jsonify(new_travel_permit)
+#     else:
+#         return render_template('404.html')
+
+
+
+# @app.route('/travel-permits', methods=["GET", "POST"])
+# def permits():
+#     check_admin()
+#     if request.method == 'POST':
+#         new_permit = TravelPermit(home=request.form.get('home_select'), destination=request.form.get('destination_select'), visa=request.form.get('visa_select'), quarantine=request.form.get('quarantine_select'))
+#         db.session.add(new_permit)
+#         db.session.commit()
+#         redirect(url_for('permits'))
+#     render_template('permits.html', permits=permits)
+
+
+
+@app.route('/travel-permits/new', methods=["GET", "POST"])
+def new_permit():
     check_admin()
     form = TravelPermitForm(request.form)
+    all_permits = TravelPermit.query.all()
     if request.method == 'POST':
         hoome = request.form.get('home_select')
         destination = request.form.get('destination_select')
         visa = request.form.get('visa_select')
         quarantine = request.form.get('quarantine_select')
         new_travel_permit = TravelPermit(home=hoome, destination=destination, visa=visa, quarantine=quarantine)
-        all_permits = TravelPermit.query.all()
+        # all_permits = TravelPermit.query.all()
         db.session.add(new_travel_permit)
         db.session.commit()
         flash("New permit successfully added")
-        return render_template('index.html', permits=all_permits)
-        # return travel_permit_schema.jsonify(new_travel_permit)
-    else:
-        return render_template('404.html')
+        return render_template('admin.html', all_permits=all_permits)
+    return render_template('admin.html', all_permits=all_permits)
 
 
-
-@app.route('/travel-permits', methods=["GET", "POST"])
-def permits():
-    check_admin()
-    if request.method == 'POST':
-        new_permit = TravelPermit(home=request.form.get('home_select'), destination=request.form.get('destination_select'), visa=request.form.get('visa_select'), quarantine=request.form.get('quarantine_select'))
-        db.session.add(new_permit)
-        db.session.commit()
-        redirect(url_for('permits'))
-    render_template('permits.html', permits=permits)
+# GET ALL PERMITS
+# @app.route('/travel-permit', methods=['GET'])
+# def get_permits():
+#     permits = TravelPermit.query.all()
+#     return render_template("permits.html", all_permits=permits)
 
 
-@app.route('/travel-permits/new', methods=["GET", "POST"])
-def new_permit():
-    render_template('new-permit.html', permits=permits)
-
-
-def find_permit(permit_id):
-    found_permit = [permit for permit in permits if permit.id == permit_id][0]
-    return found_permit
+# def find_permit(permit_id):
+#     found_permit = [permit for permit in permits if permit.id == permit_id][0]
+#     return found_permit
     # permit = TravelPermit.query.all()
     # return permit
 
 
 
-@app.route('/travel-permits/<int:id>', methods=["GET", "PATCH", "DELETE"])
-def show_permit(id):
-    found_permit = find_permit(id)
-    if request.method == b'PATCH':
-        found_permit.home = request.form.get('home_select')
-        found_permit.destination = request.form.get('destination_select')
-        found_permit.visa = request.form.get('visa_select')
-        found_permit.quarantine = request.form.get('quarantine_select')
-        return redirect(url_for('permits'))
-    if request.method == b'DELETE':
-        TravelPermit.remove(found_permit)
-        return redirect(url_for('permits'))
-    # found_permit = [permit for permit in permits if permit.id == id][0]
-    # for permit in permits:
-    #     if permit.id == id:
-    #         found_permit = permit
-    # travel_permit = TravelPermit.query.get_or_404(id)
-    return render_template('show_permit.html', permit=found_permit)
+# @app.route('/travel-permits/<int:id>', methods=["GET", "PATCH", "DELETE"])
+# def show_permit(id):
+#     found_permit = find_permit(id)
+#     if request.method == b'PATCH':
+#         found_permit.home = request.form.get('home_select')
+#         found_permit.destination = request.form.get('destination_select')
+#         found_permit.visa = request.form.get('visa_select')
+#         found_permit.quarantine = request.form.get('quarantine_select')
+#         return redirect(url_for('permits'))
+#     if request.method == b'DELETE':
+#         TravelPermit.remove(found_permit)
+#         return redirect(url_for('permits'))
+#     # found_permit = [permit for permit in permits if permit.id == id][0]
+#     # for permit in permits:
+#     #     if permit.id == id:
+#     #         found_permit = permit
+#     # travel_permit = TravelPermit.query.get_or_404(id)
+#     return render_template('show_permit.html', permit=found_permit)
 
 
-@app.route('/travel-permits/<int:id>/edit')
-def edit_permit(id):
-    check_admin()
-    found_permit = find_permit(id)
-    return render_template('edit_permit.html', permit=found_permit)
+# @app.route('/travel-permits/<int:id>/edit')
+# def edit_permit(id):
+#     check_admin()
+#     found_permit = find_permit(id)
+#     return render_template('edit_permit.html', permit=found_permit)
 
 
 
 
 # Get all permits
-@app.route('/travel-permit', methods=['GET'])
-def get_travel_permits():
-    # destination_query_params = request.args.get('destination')
-    # only admin can have access to all permits
-    home = request.args.get('home')
-    if home is not None:
-        conn = sqlite3.connect('tour.db')
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
-        result = cur.fetchall()
-        resp = jsonify(result)
-        resp.status_code = 200
-        return resp
-    elif home is None:
-        all_permits = TravelPermit.query.all()
-        result = travel_permits_schema.dump(all_permits)
-        return render_template('permits.html', permits=all_permits)
-        # return jsonify(result)
-    else:
-        # resp = jsonify('Traveller "home or destination" not found in query string')
-        # resp.status_code = 500
-        return 'Not Found'
-        conn.commit()
-        conn.close()
+# @app.route('/travel-permit', methods=['GET'])
+# def get_travel_permits():
+#     # destination_query_params = request.args.get('destination')
+#     # only admin can have access to all permits
+#     home = request.args.get('home')
+#     if home is not None:
+#         conn = sqlite3.connect('tour.db')
+#         cur = conn.cursor()
+#         cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
+#         result = cur.fetchall()
+#         resp = jsonify(result)
+#         resp.status_code = 200
+#         return resp
+#     elif home is None:
+#         all_permits = TravelPermit.query.all()
+#         result = travel_permits_schema.dump(all_permits)
+#         return render_template('all_permits.html', permits=all_permits)
+#         # return jsonify(result)
+#     else:
+#         # resp = jsonify('Traveller "home or destination" not found in query string')
+#         # resp.status_code = 500
+#         return 'Not Found'
+#         conn.commit()
+#         conn.close()
 
 
 
@@ -1113,32 +1136,32 @@ def get_travel_permits():
 
 # Get Single permit
 
-@app.route('/travel-permit/<id_>', methods=['GET'])
-def get_travel_permit(id_):
-    travel_permit = TravelPermit.query.get_or_404(id_)
-    return travel_permit_schema.jsonify(travel_permit)
+# @app.route('/travel-permit/<id_>', methods=['GET'])
+# def get_travel_permit(id_):
+#     travel_permit = TravelPermit.query.get_or_404(id_)
+#     return travel_permit_schema.jsonify(travel_permit)
 
 
 # Update a Permit
 
-@app.route('/travel-permit/<id_>', methods=['PUT'])
-def update_travel_permit(id_):
-    permit = TravelPermit.query.get_or_404(id_)
-    if request.method == 'PUT':
-        country_from = request.form.get('home_select')
-        country_to = request.form.get('destination_select')
-        visa = request.form.get('visa_select')
-        quarantine = request.form.get('quarantine_select')
+# @app.route('/travel-permit/<id_>', methods=['PUT'])
+# def update_travel_permit(id_):
+#     permit = TravelPermit.query.get_or_404(id_)
+#     if request.method == 'PUT':
+#         country_from = request.form.get('home_select')
+#         country_to = request.form.get('destination_select')
+#         visa = request.form.get('visa_select')
+#         quarantine = request.form.get('quarantine_select')
 
-        permit.home = country_from
-        permit.destination = country_to
-        permit.visa = visa
-        permit.quarantine = quarantine
+#         permit.home = country_from
+#         permit.destination = country_to
+#         permit.visa = visa
+#         permit.quarantine = quarantine
 
-        db.session.commit()
-        flash("Permit successfully edited")
-        all_permits = TravelPermit.query.all()
-        return render_template('permit-edit.html', permits=permit)
+#         db.session.commit()
+#         flash("Permit successfully edited")
+#         all_permits = TravelPermit.query.all()
+#         return render_template('permit-edit.html', permits=permit)
         # return travel_permit_schema.jsonify(permit)
 
 
@@ -1182,12 +1205,12 @@ def update_travel_permit(id_):
 
 # Get Delete permit
 
-@app.route('/travel-permit/<id_>', methods=['DELETE'])
-def delete_travel_permit(id_):
-    travel_permit = TravelPermit.query.get_or_404(id_)
-    db.session.delete(travel_permit)
-    db.session.commit()
-    return travel_permit_schema.jsonify(travel_permit)
+# @app.route('/travel-permit/<id_>', methods=['DELETE'])
+# def delete_travel_permit(id_):
+#     travel_permit = TravelPermit.query.get_or_404(id_)
+#     db.session.delete(travel_permit)
+#     db.session.commit()
+#     return travel_permit_schema.jsonify(travel_permit)
 
 
 # Get Query 

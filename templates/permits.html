@@ -6,7 +6,8 @@
         <h1>All Permits</h1> 
         <a href="{{url_for('new_permit')}}">Add new permit</a>
         {% from 'includes/_formhelpers.html' import render_field %}
-        <form method='POST' action="{{url_for('update_travel_permit', id = permits.id)}}">
+        <!-- <form method='POST' action="{{url_for('update_travel_permit', id = permits.id)}}"> -->
+            <form method='POST' action="">
             {{ form.hidden_tag() }}
             <select name="home_select">
                 {% for x in form.home %}
