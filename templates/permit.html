@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block head %}
+    <title>Permit</title>
+{% endblock %}
+
+{% block body %}
+<div class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="intro-message">
+                    <div>
+                        <h3>{{title}}</h3>
+                        <table>
+                            <thead><tr><th>ID</th><th>Country from</th><th>Country to</th><th>Visa requirement</th><th>Qurantine requirements</th></tr></thead>
+                            <tbody>
+                                {%if user.access == 300 %}
+                                    <div>
+                                        <a href="{{url_for('update_permit', permit_id = permit.id)}}">Update</a>
+                                    </div>
+                                {%endif%}
+                                <tr><td>{{permit.id}}</td><td>{{ permit.home }}</td><td>{{ permit.destination }}</td><td>{{ permit.visa }}</td><td>{{ permit.quarantine }}</td></tr>  
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr class="intro-divider">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

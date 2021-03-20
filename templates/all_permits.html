@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block head %}
+    <title>Administrators</title>
+{% endblock %}
+
+{% block body %}
+<div class="intro-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="intro-message">
+                    <div>
+                        <h3>{{title}}</h3>
+                        <table>
+                            <thead><tr><th>ID</th><th>Country from</th><th>Country to</th><th>Visa requirement</th><th>Qurantine requirements</th></tr></thead>
+                            <tbody>
+                                {% for permit in permits %}
+                                    <tr><td>{{permit.id}}</td><td>{{ permit.home }}</td><td>{{ permit.destination }}</td><td>{{ permit.visa }}</td><td>{{ permit.quarantine }}</td></tr>
+                                {% endfor %}    
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr class="intro-divider">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block body%}
+    <div class='row-wrapper'>
+        <h1>{{title}}</h1> 
+        <!-- <a href="{{url_for('new_permit')}}">Add new permit</a> -->
+        {% from 'includes/_formhelpers.html' import render_field %}
+            <form method='POST' action="">
+            {{ form.hidden_tag() }}
+            <p>Country from</p>
+            <select name="home_select">
+                {% for x in form.home %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+            <p>Country to</p>
+            <select name="destination_select">
+                {% for x in form.destination %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+            <p>Visa Requirements</p>
+            <select name="visa_select">
+                {% for x in form.visa %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+
+            <p>Covid Requirements</p>
+            <select name="quarantine_select">
+                {% for x in form.quarantine %}
+                    <option>{{ x }}</option>
+                {% endfor %}                                              
+            </select>
+            <p>
+                <input type='submit' value='Add'>
+            </p>
+        </form>
+    </div>
+{% endblock %}

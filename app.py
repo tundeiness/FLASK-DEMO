@@ -1009,8 +1009,17 @@ def root():
 #     render_template('permits.html', permits=permits)
 
 
+@app.route('/travel-permits', methods=["GET", "POST"])
+# a decorator to check if user is admin
+def all_permits():
+    check_admin()
+    all_permits = TravelPermit.query.all()
+    return render_template('all_permits.html', title='All Permits', permits=all_permits)
+
+
 
 @app.route('/travel-permits/new', methods=["GET", "POST"])
+# a decorator to check if user is admin
 def new_permit():
     check_admin()
     form = TravelPermitForm(request.form)
@@ -1021,13 +1030,47 @@ def new_permit():
         visa = request.form.get('visa_select')
         quarantine = request.form.get('quarantine_select')
         new_travel_permit = TravelPermit(home=hoome, destination=destination, visa=visa, quarantine=quarantine)
-        # all_permits = TravelPermit.query.all()
         db.session.add(new_travel_permit)
         db.session.commit()
-        flash("New permit successfully added")
-        return render_template('admin.html', all_permits=all_permits)
-    return render_template('admin.html', all_permits=all_permits)
+        flash("New permit successfully created and added")
+        return redirect(url_for('admin_dashboard'))
+    return render_template('create_permit.html', title='New Permit', form=form)
 
+
+
+#single permit
+@app.route('/travel-permits/<int:permit_id>', methods=["GET", "POST"])
+# a decorator to check if user is admin
+def permit(permit_id):
+    check_admin()
+    permit = TravelPermit.query.get_or_404(permit_id)
+    return render_template("permit.html",user=get_curr_user(), permit=permit)
+
+
+#update permit
+@app.route('/travel-permits/<int:permit_id>/update', methods=["GET", "POST"])
+# a decorator to check if user is admin
+def update_permit(permit_id):
+    check_admin()
+    permit = TravelPermit.query.get_or_404(permit_id)
+    if g.user.access < 300:
+        abort(403)
+    form = TravelPermitForm(request.form)
+    if request.method == 'POST':
+        permit.home = request.form.get('home_select')
+        permit.destination = request.form.get('destination_select')
+        permit.visa = request.form.get('visa_select')
+        permit.quarantine = request.form.get('quarantine_select')
+        db.session.commit()
+        flash('Permit updated')
+        return redirect(url_for('permit', permit_id=permit.id))
+    elif request.method == 'GET':
+        # populate the dropdowns
+        form.home.data = permit.home
+        form.destination.data = permit.destination
+        form.visa.data = permit.visa
+        form.quarantine.data = permit.quarantine
+    return render_template('create_permit.html', title='Update Permit', form=form)
 
 # GET ALL PERMITS
 # @app.route('/travel-permit', methods=['GET'])
