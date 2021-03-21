@@ -16,7 +16,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
-from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user
+from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, is_admin
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
@@ -815,8 +815,9 @@ def profile():
 
 
 @app.route('/admin', methods=['GET', 'POST'])
+@is_admin
 def admin_dashboard():
-    check_admin()
+    # check_admin()
     users = User.query.all()
     permits = TravelPermit.query.all()
     return render_template("admin.html", all_users=users)
@@ -1010,16 +1011,16 @@ def root():
 
 
 @app.route('/travel-permits', methods=["GET", "POST"])
-# a decorator to check if user is admin
+# @is_admin
 def all_permits():
-    check_admin()
+    # check_admin()
     all_permits = TravelPermit.query.all()
     return render_template('all_permits.html', title='All Permits', permits=all_permits)
 
 
 
 @app.route('/travel-permits/new', methods=["GET", "POST"])
-# a decorator to check if user is admin
+@is_admin
 def new_permit():
     check_admin()
     form = TravelPermitForm(request.form)
@@ -1049,9 +1050,9 @@ def permit(permit_id):
 
 #update permit
 @app.route('/travel-permits/<int:permit_id>/update', methods=["GET", "POST"])
-# a decorator to check if user is admin
+@is_admin
 def update_permit(permit_id):
-    check_admin()
+    # check_admin()
     permit = TravelPermit.query.get_or_404(permit_id)
     if g.user.access < 300:
         abort(403)
