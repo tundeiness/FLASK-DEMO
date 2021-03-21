@@ -16,7 +16,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
-from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, is_admin
+from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, is_admin, not_admin
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
@@ -677,6 +677,7 @@ def get_curr_user():
 
 
 @app.route('/profile', methods=['GET', 'POST'])
+@not_admin
 def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
