@@ -33,22 +33,25 @@ def enforce_correct_user(fn):
 
 
     
-def is_admin(fn):
+def check_admin(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         correct_access = 300
-        if correct_access != session.get('access'):
-            flash("you are not authorized")
+        if session.get('access') < correct_access:
+            # flash("you are not authorized")
             return redirect(url_for('profile'))
         return fn(*args, **kwargs)
     return wrapper
 
-def not_admin(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        correct_access = 200
-        if correct_access != session.get('access'):
-            flash("you are not authorized")
-            return redirect(url_for('admin_dashboard'))
-        return fn(*args, **kwargs)
-    return wrapper
+
+
+
+# def is_admin(fn):
+#     @wraps(fn)
+#     def wrapper(*args, **kwargs):
+#         correct_access = 200
+#         if correct_access != session.get('access'):
+#             flash("you are not authorized")
+#             return redirect(url_for('admin_dashboard'))
+#         return fn(*args, **kwargs)
+#     return wrapper

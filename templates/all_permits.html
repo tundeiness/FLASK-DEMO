@@ -15,12 +15,30 @@
                             <thead><tr><th>ID</th><th>Country from</th><th>Country to</th><th>Visa requirement</th><th>Qurantine requirements</th></tr></thead>
                             <tbody>
                                 {% for permit in permits %}
-                                    <tr><td>{{permit.id}}</td><td>{{ permit.home }}</td><td>{{ permit.destination }}</td><td>{{ permit.visa }}</td><td>{{ permit.quarantine }}</td></tr>
+                                    <tr>
+                                        <td>{{permit.id}}</td>
+                                        <td>{{ permit.home }}</td>
+                                        <td>{{ permit.destination }}</td>
+                                        <td>{{ permit.visa }}</td>
+                                        <td>{{ permit.quarantine }}</td>
+                                        {%if user.access == 300 %}
+                                            <td><a href="{{url_for('update_permit', permit_id = permit.id)}}">Update</a></td>
+                                        {%endif%}
+                                    </tr>
                                 {% endfor %}    
                             </tbody>
                         </table>
                     </div>
                     <hr class="intro-divider">
+                        {%if user.access == 300 %}
+                            <div>
+                                <a href="{{url_for('admin_dashboard')}}">Dashboard</a>
+                            </div>
+                        {%else%}
+                            <div>
+                                <a href="{{url_for('profile')}}">Home</a>
+                            </div>
+                        {%endif%}
                 </div>
             </div>
         </div>

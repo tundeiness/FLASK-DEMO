@@ -16,7 +16,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
-from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, is_admin, not_admin
+from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, check_admin
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
@@ -112,14 +112,14 @@ class TravelPermit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     home = db.Column(db.String(128), nullable=False)
     destination = db.Column(db.String(128), nullable=False)
-    visa = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown)
-    quarantine = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown)
+    visa = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown.value)
+    quarantine = db.Column(db.Enum(RestrictionType), nullable=False, default=RestrictionType.unknown.value)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     # db.Column(db.Enum(RestrictionType))
     # value = db.Column(Enum(RestrictionType))
 
 # constructor
-def __init__(self, home, destination, visa=RestrictionType.unknown, quarantine=RestrictionType.unknown):
+def __init__(self, home, destination, visa=RestrictionType.unknown.name, quarantine=RestrictionType.unknown.value):
     self.home =  home
     self.destination = destination
     self.visa = visa
@@ -316,12 +316,12 @@ def query_users():
 
 
 
-def check_admin():
-    """
-    Prevent non-admins from accessing the page
-    """
-    if g.user.access < 300:
-        abort(403)
+# def check_admin():
+#     """
+#     Prevent non-admins from accessing the page
+#     """
+#     if g.user.access < 300:
+#         abort(403)
 
 
 @app.route('/signup', methods=['GET','POST'])
@@ -677,7 +677,7 @@ def get_curr_user():
 
 
 @app.route('/profile', methods=['GET', 'POST'])
-@not_admin
+@check_admin
 def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
@@ -816,7 +816,7 @@ def profile():
 
 
 @app.route('/admin', methods=['GET', 'POST'])
-@is_admin
+@check_admin
 def admin_dashboard():
     # check_admin()
     users = User.query.all()
@@ -1012,16 +1012,58 @@ def root():
 
 
 @app.route('/travel-permits', methods=["GET", "POST"])
-# @is_admin
 def all_permits():
-    # check_admin()
-    all_permits = TravelPermit.query.all()
-    return render_template('all_permits.html', title='All Permits', permits=all_permits)
+    home = request.form.get('home_select')
+    if home is not None:
+        conn = sqlite3.connect('tour.db')
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
+        result = cur.fetchall()
+        resp = jsonify(result)
+        resp.status_code = 200
+        return resp
+    elif home is None:
+        all_permits = TravelPermit.query.all()
+        print(all_permits, flush=True)
+        return render_template('all_permits.html', title='All Permits',user=get_curr_user(), permits=all_permits)
+    else:
+        return 'Not Found'
+        conn.commit()
+        conn.close()
+
+# Get all permits
+# @app.route('/travel-permit', methods=['GET'])
+# def get_travel_permits():
+#     # destination_query_params = request.args.get('destination')
+#     # only admin can have access to all permits
+#     home = request.args.get('home')
+#     if home is not None:
+#         conn = sqlite3.connect('tour.db')
+#         cur = conn.cursor()
+#         cur.execute("SELECT * FROM travel_permit WHERE home=?", (home,))
+#         result = cur.fetchall()
+#         resp = jsonify(result)
+#         resp.status_code = 200
+#         return resp
+#     elif home is None:
+#         all_permits = TravelPermit.query.all()
+#         result = travel_permits_schema.dump(all_permits)
+#         return render_template('all_permits.html', permits=all_permits)
+#         # return jsonify(result)
+#     else:
+#         # resp = jsonify('Traveller "home or destination" not found in query string')
+#         # resp.status_code = 500
+#         return 'Not Found'
+#         conn.commit()
+#         conn.close()
+
+
+
 
 
 
 @app.route('/travel-permits/new', methods=["GET", "POST"])
-@is_admin
+@check_admin
 def new_permit():
     check_admin()
     form = TravelPermitForm(request.form)
@@ -1031,6 +1073,7 @@ def new_permit():
         destination = request.form.get('destination_select')
         visa = request.form.get('visa_select')
         quarantine = request.form.get('quarantine_select')
+        print(visa, flush=True)
         new_travel_permit = TravelPermit(home=hoome, destination=destination, visa=visa, quarantine=quarantine)
         db.session.add(new_travel_permit)
         db.session.commit()
@@ -1051,7 +1094,7 @@ def permit(permit_id):
 
 #update permit
 @app.route('/travel-permits/<int:permit_id>/update', methods=["GET", "POST"])
-@is_admin
+@check_admin
 def update_permit(permit_id):
     # check_admin()
     permit = TravelPermit.query.get_or_404(permit_id)
