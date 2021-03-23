@@ -9,7 +9,7 @@ import sqlalchemy
 from sqlalchemy import create_engine
 from sqlalchemy_utils import IntRangeType, create_database, database_exists
 import sqlite3
-from enum import Enum
+import enum
 from sqlite3 import Error
 import json
 # from flask_modus import Modus
@@ -100,7 +100,7 @@ ma = Marshmallow(app)
 
 
 
-class RestrictionType(str,Enum):
+class RestrictionType(enum.Enum):
     unknown = "unknown"
     required = "required"
     unrequired = "unrequired"
@@ -119,7 +119,7 @@ class TravelPermit(db.Model):
     # value = db.Column(Enum(RestrictionType))
 
 # constructor
-def __init__(self, home, destination, visa, quarantine):
+def __init__(self, home, destination, visa=RestrictionType.unknown, quarantine=RestrictionType.unknown):
     self.home =  home
     self.destination = destination
     self.visa = visa
