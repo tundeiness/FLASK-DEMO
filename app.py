@@ -1024,6 +1024,11 @@ def all_permits():
         return resp
     elif home is None:
         all_permits = TravelPermit.query.all()
+        # conn = sqlite3.connect('tour.db')
+        # cur = conn.cursor()
+        # cur.execute("SELECT * FROM travel_permit")
+        # result = cur.fetchall()
+        # resp = jsonify(result)
         print(all_permits, flush=True)
         return render_template('all_permits.html', title='All Permits',user=get_curr_user(), permits=all_permits)
     else:

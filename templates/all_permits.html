@@ -19,8 +19,8 @@
                                         <td>{{permit.id}}</td>
                                         <td>{{ permit.home }}</td>
                                         <td>{{ permit.destination }}</td>
-                                        <td>{{ permit.visa }}</td>
-                                        <td>{{ permit.quarantine }}</td>
+                                        <td>{{ permit.visa.value }}</td>
+                                        <td>{{ permit.quarantine.value }}</td>
                                         {%if user.access == 300 %}
                                             <td><a href="{{url_for('update_permit', permit_id = permit.id)}}">Update</a></td>
                                         {%endif%}
