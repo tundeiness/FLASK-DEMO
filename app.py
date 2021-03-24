@@ -579,15 +579,11 @@ def login():
             session['logged_in'] = True
             session['email'] = user.email 
             session['username'] = user.username
-            if user.access == 300:
-                session['access'] = user.access
-                return redirect(url_for('admin_dashboard'))
-            else:
-                session['access'] = user.access
-                return redirect(url_for('profile', 303))
+            session['access'] = user.access
+            return redirect(url_for('profile'))
         else:
             flash('user not found')
-            return render_template('login.html', form = form)       
+            return render_template('login.html', form = form)
     return render_template('login.html', form = form)       
 
 
@@ -595,7 +591,6 @@ def login():
 @app.route('/logout')
 def logout():
     # Removing data from session by setting logged_flag to False.
-    # session['logged_in'] = False
     session.pop('email', None)
     flash('Logged out!')
     # redirecting to home page
@@ -677,10 +672,10 @@ def get_curr_user():
 
 
 @app.route('/profile', methods=['GET', 'POST'])
-@check_admin
 def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
+    permits = TravelPermit.query.all()
     print(first, flush=True)
     if not g.user:
         return redirect(url_for('login'))
@@ -715,10 +710,16 @@ def profile():
             flash("Record successfully added")
             return render_template("profile.html", msg = first, form=form, country=first)
             # con.close()
-    return render_template('profile.html', user=get_curr_user(), form=form, country=first)
+    return render_template('profile.html', user=get_curr_user(), form=form, country=first, permits=permits)
 
 
-
+# @app.route('/admin', methods=['GET', 'POST'])
+# @check_admin
+# def admin_dashboard():
+#     # check_admin()
+#     users = User.query.all()
+#     permits = TravelPermit.query.all()
+#     return render_template("admin.html", all_users=users)
 
 
 
@@ -815,13 +816,13 @@ def profile():
 #     return render_template('admin_dashboard.html', title="Dashboard")
 
 
-@app.route('/admin', methods=['GET', 'POST'])
-@check_admin
-def admin_dashboard():
-    # check_admin()
-    users = User.query.all()
-    permits = TravelPermit.query.all()
-    return render_template("admin.html", all_users=users)
+# @app.route('/admin', methods=['GET', 'POST'])
+# @check_admin
+# def admin_dashboard():
+#     # check_admin()
+#     users = User.query.all()
+#     permits = TravelPermit.query.all()
+#     return render_template("admin.html", all_users=users)
     # form = CountryForm(request.form)
     # selected_country = request.form.get('country_select')
     # if request.method == 'POST':
@@ -1083,7 +1084,7 @@ def new_permit():
         db.session.add(new_travel_permit)
         db.session.commit()
         flash("New permit successfully created and added")
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('profile'))
     return render_template('create_permit.html', title='New Permit', form=form)
 
 

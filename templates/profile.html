@@ -1,27 +1,45 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title>Profile Page</title>
+    <title>Dashboard</title>
 {% endblock %}
 
 {% block body %}
   <h1 class="title">
       Welcome, {{g.user.username}} 
   </h1>
-  <form method="POST" action="{{ url_for('profile') }}">
-    {{ form.hidden_tag() }}
-     <select name="country_select">
-       {% for x in form.country %}
-           <option>{{ x }}</option>
-       {% endfor %}                                              
-     </select>
-     <!-- <input type="submit" value="submit"> -->
-     {{ form.submit }}
-  </form>
- <!-- <p>{{select}}</p> -->
- <p>{{country}}</p>
- <a href="{{url_for('all_permits')}}">See Permits</a>
-  <div class="auth-wrapper">
-    <a href="{{url_for('logout')}}">Log out</a>
-  </div>
+  {%if user.access == 200 %}
+    <form method="POST" action="{{ url_for('profile') }}">
+      {{ form.hidden_tag() }}
+      <select name="country_select">
+        {% for x in form.country %}
+            <option>{{ x }}</option>
+        {% endfor %}                                              
+      </select>
+      {{ form.submit }}
+    </form>
+    <p>{{country}}</p>
+  {%endif%}
+
+  {%if user.access == 300 %}
+    <div>
+      <h3>All Users</h3>
+      <table>
+          <thead><tr><th>ID</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Date of Reg</th></tr></thead>
+          <tbody>
+              {% for user in all_user %}
+                  <tr><td>{{user.id}}</td><td>{{ user.first_name }}</td><td>{{ user.last_name }}</td><td>{{ user.email }}</td><td>{{ user.reg_date.strftime('%Y-%m-%d') }}</td></tr>
+              {% endfor %}    
+          </tbody>
+      </table>
+    </div>
+  {%endif%}
+  {%if user.access == 300 %}
+    <hr class="intro-divider">
+    <a href="{{url_for('new_permit')}}">Add New Permit</a>
+  {%endif%}
+  <a href="{{url_for('all_permits')}}">See Permits</a>
+    <div class="auth-wrapper">
+      <a href="{{url_for('logout')}}">Log out</a>
+    </div>
 {% endblock %}

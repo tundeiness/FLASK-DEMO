@@ -30,15 +30,9 @@
                         </table>
                     </div>
                     <hr class="intro-divider">
-                        {%if user.access == 300 %}
-                            <div>
-                                <a href="{{url_for('admin_dashboard')}}">Dashboard</a>
-                            </div>
-                        {%else%}
-                            <div>
-                                <a href="{{url_for('profile')}}">Home</a>
-                            </div>
-                        {%endif%}
+                        <div>
+                            <a href="{{url_for('profile')}}">Home</a>
+                        </div>
                 </div>
             </div>
         </div>
