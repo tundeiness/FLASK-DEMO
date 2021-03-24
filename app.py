@@ -676,6 +676,7 @@ def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
     permits = TravelPermit.query.all()
+    users = User.query.all()
     print(first, flush=True)
     if not g.user:
         return redirect(url_for('login'))
@@ -708,9 +709,9 @@ def profile():
             new_rec.country = first
             db.session.commit()
             flash("Record successfully added")
-            return render_template("profile.html", msg = first, form=form, country=first)
+            return render_template("profile.html", msg = first, form=form, country=first, user=get_curr_user())
             # con.close()
-    return render_template('profile.html', user=get_curr_user(), form=form, country=first, permits=permits)
+    return render_template('profile.html', user=users, form=form, country=first, permits=permits)
 
 
 # @app.route('/admin', methods=['GET', 'POST'])

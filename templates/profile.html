@@ -8,7 +8,7 @@
   <h1 class="title">
       Welcome, {{g.user.username}} 
   </h1>
-  {%if user.access == 200 %}
+  {%if g.user.access == 200 %}
     <form method="POST" action="{{ url_for('profile') }}">
       {{ form.hidden_tag() }}
       <select name="country_select">
@@ -21,20 +21,20 @@
     <p>{{country}}</p>
   {%endif%}
 
-  {%if user.access == 300 %}
+  {%if g.user.access == 300 %}
     <div>
       <h3>All Users</h3>
       <table>
           <thead><tr><th>ID</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Date of Reg</th></tr></thead>
           <tbody>
-              {% for user in all_user %}
+              {% for user in user %}
                   <tr><td>{{user.id}}</td><td>{{ user.first_name }}</td><td>{{ user.last_name }}</td><td>{{ user.email }}</td><td>{{ user.reg_date.strftime('%Y-%m-%d') }}</td></tr>
               {% endfor %}    
           </tbody>
       </table>
     </div>
   {%endif%}
-  {%if user.access == 300 %}
+  {%if g.user.access == 300 %}
     <hr class="intro-divider">
     <a href="{{url_for('new_permit')}}">Add New Permit</a>
   {%endif%}
