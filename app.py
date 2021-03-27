@@ -279,6 +279,10 @@ class TravelPermitForm(FlaskForm):
 
 
 
+
+class EmailConfirmationForm(FlaskForm):  
+    email = StringField('Email', [validators.Length(min=6, max=50)])
+    submit = SubmitField("Submit")
 # @app.route('/users', methods=['POST'])
 # def index():
 #     if request.method == 'POST':
@@ -685,32 +689,11 @@ def profile():
         cond = form.validate()
         print(cond, flush=True)
         if request.method == 'POST':
-            # import IPython
-            # IPython.embed(first)
-            # c = User(country=first)
-            # db.session.add(c)
-            # db.session.commit()
-            # db.session.execute('UPDATE users SET country = ? WHERE country = ?', (first, None))
-            # db.commit()
-            # try:
-            #     with sqlite3.connect("tour.db") as con:
-            #         cur = con.cursor()
-            #         print("Opened database successfully")
-            #         # cur.execute('''INSERT INTO users (email, country) VALUES (g.user.email, first) ''')
-            #         # cur.execute("INSERT INTO users (country) VALUE (?)",(first) )
-            #         cur.execute('''UPDATE users SET country = ? WHERE country = ?''', (first,""))
-            #         con.commit()
-            #     flash("Record successfully added")
-            # except:
-            #     con.rollback()
-            #     flash("error in insert operation")
-            # finally:
             new_rec = User.query.filter_by(email=g.user.email).first()
             new_rec.country = first
             db.session.commit()
             flash("Record successfully added")
             return render_template("profile.html", msg = first, form=form, country=first, user=get_curr_user())
-            # con.close()
     return render_template('profile.html', user=users, form=form, country=first, permits=permits)
 
 
@@ -1026,11 +1009,6 @@ def all_permits():
         return resp
     elif home is None:
         all_permits = TravelPermit.query.all()
-        # conn = sqlite3.connect('tour.db')
-        # cur = conn.cursor()
-        # cur.execute("SELECT * FROM travel_permit")
-        # result = cur.fetchall()
-        # resp = jsonify(result)
         print(all_permits, flush=True)
         return render_template('all_permits.html', title='All Permits',user=get_curr_user(), permits=all_permits)
     else:
