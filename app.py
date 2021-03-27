@@ -167,17 +167,20 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False)
     country = db.Column(db.String(128), nullable=True)
     access = db.Column(db.Integer, nullable=False, default=ACCESS['user'])
-    confirm_email = db.Boolean(default=False)
+    confirm_email = db.Column(db.Boolean, default=False, nullable=True)
+    email_token = db.Column(db.Text, nullable=True)
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
 
 # constructor
-def __init__(self,first_name, last_name, username, email, password, access=ACCESS['user']):
+def __init__(self,first_name, last_name, username, email, email_token, password, access=ACCESS['user'], confirm_email=False):
     self.first_name=  first_name
     self.last_name = last_name
     self.username = username
     self.email = email
     self.access = access
+    self.confirm_email = confirm_email
+    self.email_token = email_token
     self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 # def is_admin(self):
@@ -288,9 +291,9 @@ class TravelPermitForm(FlaskForm):
 
 
 
-class EmailConfirmationForm(FlaskForm):  
-    email = StringField('Email', [validators.Length(min=6, max=50)])
-    submit = SubmitField("Submit")
+# class EmailConfirmationForm(FlaskForm):  
+#     email = StringField('Email', [validators.Length(min=6, max=50)])
+#     submit = SubmitField("Submit")
 # @app.route('/users', methods=['POST'])
 # def index():
 #     if request.method == 'POST':
@@ -345,10 +348,10 @@ def signup():
         last_name = form.last_name.data
         username = form.username.data
         email = form.email.data
-        password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
         token = serializer.dumps(email, salt='email-confirm')
+        password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
         try:
-            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email,access=200, password=password)
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, email_token=token, password=password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
@@ -364,17 +367,24 @@ def signup():
     return render_template('register.html', form=form)
 
 
-@app.route('/confirmation-email/<token>', methods=['GET','POST'])
+@app.route('/confirmation-email/<token>')
+@prevent_login_signup
 def confirm_email(token):
     try:
         email = serializer.loads(token, salt='email-confirm', max_age = 3600)
     except SignatureExpired:
-        return '<h1>link has expired</h1>'
+        flash('The confirmation link is invalid or has expired.')
+    emx = session.get('email')
+    user = User.query.filter_by(email=emx).first_or_404()
+    if user.confirm_email:
+        flash('Account already confirmed. Please login.')
+    else:
+        user.confirm_email = True
+        db.session.add(user)
+        db.session.commit()
+        flash('You have confirmed your account. Thanks!')
     return redirect(url_for('success'))
-
-
-
-
+    
 
 
 @app.before_request
