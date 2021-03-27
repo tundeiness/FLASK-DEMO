@@ -34,6 +34,8 @@ app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
 app.secret_key = 'formyeyesonlysecretkey'
 basedir = os.path.abspath(os.path.dirname(__file__))
 # app = Flask(__name__, template_folder="templates")
+app.config.from_pyfile('config.cfg')
+
 
 # Check environment
 
@@ -98,6 +100,7 @@ db = SQLAlchemy(app)
 
 # Initialise marshmallow
 ma = Marshmallow(app)
+mail = Mail(app)
 
 
 
