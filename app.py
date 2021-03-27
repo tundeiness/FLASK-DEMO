@@ -23,6 +23,7 @@ from country import COUNTRY
 from restrict import RESTRICTION_TYPE
 import sys
 from middleware import HTTPMethodOverrideMiddleware
+from flask_mail import Mail, Message
 
 
 
