@@ -24,6 +24,7 @@ from restrict import RESTRICTION_TYPE
 import sys
 from middleware import HTTPMethodOverrideMiddleware
 from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 
 
 
@@ -101,6 +102,7 @@ db = SQLAlchemy(app)
 # Initialise marshmallow
 ma = Marshmallow(app)
 mail = Mail(app)
+serializer = URLSafeTimedSerializer(app.secret_key)
 
 
 
@@ -165,7 +167,9 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False)
     country = db.Column(db.String(128), nullable=True)
     access = db.Column(db.Integer, nullable=False, default=ACCESS['user'])
+    confirm_email = db.Boolean(default=False)
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
 
 # constructor
 def __init__(self,first_name, last_name, username, email, password, access=ACCESS['user']):
@@ -342,17 +346,34 @@ def signup():
         username = form.username.data
         email = form.email.data
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
+        token = serializer.dumps(email, salt='email-confirm')
         try:
             new_user = User(first_name=first_name, last_name=last_name, username=username, email=email,access=200, password=password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
             flash('Sign up successful')
+            msg = Message('Confirm email', sender='myname@eample.com', recipients=[email])
+            link = url_for('Confirm email', token=token, external=True )
+            msg.body('your link is {}'.format(link))
+            mail.send(msg)
             return redirect(url_for('profile'))
         except IntegrityError:
             flash('Details already exists')
             return render_template('register.html')
     return render_template('register.html', form=form)
+
+
+@app.route('/confirmation-email/<token>', methods=['GET','POST'])
+def confirm_email(token):
+    try:
+        email = serializer.loads(token, salt='email-confirm', max_age = 3600)
+    except SignatureExpired:
+        return '<h1>link has expired</h1>'
+    return redirect(url_for('success'))
+
+
+
 
 
 
