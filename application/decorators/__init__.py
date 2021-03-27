@@ -1,5 +1,5 @@
 from functools import wraps 
-from  flask import redirect, url_for, session, flash
+from  flask import redirect, url_for, session, flash, g
 
 def enforce_auth(fn):
     @wraps(fn)
@@ -40,6 +40,17 @@ def check_admin(fn):
         if session.get('access') < correct_access:
             # flash("you are not authorized")
             return redirect(url_for('profile'))
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+
+def check_confirmed(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if g.user.confirm_email is False:
+            flash('Please confirm your account!')
+            return redirect(url_for('unconfirmed'))
         return fn(*args, **kwargs)
     return wrapper
 

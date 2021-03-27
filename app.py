@@ -351,15 +351,20 @@ def signup():
         token = serializer.dumps(email, salt='email-confirm')
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
         try:
-            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, email_token=token, password=password)
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, email_token=token, confirm_email=False, password=password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
             flash('Sign up successful')
-            msg = Message('Confirm email', sender='myname@eample.com', recipients=[email])
             link = url_for('Confirm email', token=token, external=True )
-            msg.body('your link is {}'.format(link))
+            # msg.body('your link is {}'.format(link))
+            html = render_template('activate.html', link=link)
+            # subject = "Please confirm your email"
+            # send_email(user.email, subject, html)
+            msg = Message('Please confirm your email', sender='myname@eample.com', html=html, recipients=[email])
             mail.send(msg)
+            flash('A confirmation email has been sent via email.')
+            # return redirect(url_for("unconfirmed"))
             return redirect(url_for('profile'))
         except IntegrityError:
             flash('Details already exists')
@@ -384,6 +389,17 @@ def confirm_email(token):
         db.session.commit()
         flash('You have confirmed your account. Thanks!')
     return redirect(url_for('success'))
+
+
+
+
+@app.route('/unconfirmed')
+@prevent_login_signup
+def unconfirmed():
+    if g.user.confirm_email:
+        return redirect('profile')
+    flash('Please confirm your account!')
+    return render_template('unconfirmed.html')
     
 
 
