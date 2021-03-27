@@ -16,7 +16,7 @@ import json
 from flask_bcrypt import Bcrypt
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
-from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, check_admin
+from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, check_admin, check_confirmed
 from flask_wtf import FlaskForm
 from wtforms_sqlalchemy.fields import QuerySelectField
 from country import COUNTRY
@@ -359,8 +359,6 @@ def signup():
             link = url_for('Confirm email', token=token, external=True )
             # msg.body('your link is {}'.format(link))
             html = render_template('activate.html', link=link)
-            # subject = "Please confirm your email"
-            # send_email(user.email, subject, html)
             msg = Message('Please confirm your email', sender='myname@eample.com', html=html, recipients=[email])
             mail.send(msg)
             flash('A confirmation email has been sent via email.')
@@ -370,6 +368,7 @@ def signup():
             flash('Details already exists')
             return render_template('register.html')
     return render_template('register.html', form=form)
+
 
 
 @app.route('/confirmation-email/<token>')
@@ -401,6 +400,17 @@ def unconfirmed():
     flash('Please confirm your account!')
     return render_template('unconfirmed.html')
     
+
+@app.route('/resend')
+def resend_confirmation():
+    email = g.user.email
+    token = serializer.dumps(email, salt='email-confirm')
+    link = url_for('confirm_email', token=token, _external=True)
+    html = render_template('activate.html', link=link)
+    msg = Message('Please confirm your email', sender='myname@eample.com', html=html, recipients=[email])
+    mail.send(msg)
+    flash('A new confirmation email has been sent.')
+    return redirect(url_for('unconfirmed'))
 
 
 @app.before_request
@@ -727,6 +737,7 @@ def get_curr_user():
 
 
 @app.route('/profile', methods=['GET', 'POST'])
+@check_confirmed
 def profile():
     form = CountryForm(request.form)
     first = request.form.get('country_select')
