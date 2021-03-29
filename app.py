@@ -355,15 +355,15 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
-            flash('Sign up successful')
+            # flash('Sign up successful')
             link = url_for('Confirm email', token=token, external=True )
             # msg.body('your link is {}'.format(link))
             html = render_template('activate.html', link=link)
             msg = Message('Please confirm your email', sender='myname@eample.com', html=html, recipients=[email])
             mail.send(msg)
             flash('A confirmation email has been sent via email.')
-            # return redirect(url_for("unconfirmed"))
-            return redirect(url_for('profile'))
+            return redirect(url_for("unconfirmed"))
+            # return redirect(url_for('profile'))
         except IntegrityError:
             flash('Details already exists')
             return render_template('register.html')
@@ -387,7 +387,7 @@ def confirm_email(token):
         db.session.add(user)
         db.session.commit()
         flash('You have confirmed your account. Thanks!')
-    return redirect(url_for('success'))
+    return redirect(url_for('profile'))
 
 
 
