@@ -25,6 +25,12 @@ import sys
 from middleware import HTTPMethodOverrideMiddleware
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+# from dotenv import load_dotenv
+
+
+
+
+
 
 
 
@@ -60,6 +66,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 
+#email server
+
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+
 
 # SQlite configurations
 # app.config['MYSQL_USER'] = 'root'
@@ -94,6 +107,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # modus = Modus(app)
 
+
+
+# mail_settings = {
+#     "MAIL_SERVER": 'smtp.gmail.com',
+#     "MAIL_PORT": 465,
+#     "MAIL_USE_TLS": False,
+#     "MAIL_USE_SSL": True,
+#     "MAIL_USERNAME": os.environ['EMAIL_USER'],
+#     "MAIL_PASSWORD": os.environ['EMAIL_PASSWORD']
+# }
+
+
+
+# app.config.update(mail_settings)
+
+
+
+
 bcrypt = Bcrypt(app)
 
 # initialise database
@@ -102,7 +133,15 @@ db = SQLAlchemy(app)
 # Initialise marshmallow
 ma = Marshmallow(app)
 mail = Mail(app)
+# load_dotenv()
+# serializer = URLSafeTimedSerializer(app.secret_key)
+
+
+
+
 serializer = URLSafeTimedSerializer(app.secret_key)
+
+
 
 
 
@@ -173,7 +212,7 @@ class User(db.Model):
     
 
 # constructor
-def __init__(self,first_name, last_name, username, email, email_token, password, access=ACCESS['user'], confirm_email=False):
+def __init__(self,first_name, last_name, username, email, email_token, password, reg_date, access=ACCESS['user'], confirm_email=False):
     self.first_name=  first_name
     self.last_name = last_name
     self.username = username
@@ -181,6 +220,7 @@ def __init__(self,first_name, last_name, username, email, email_token, password,
     self.access = access
     self.confirm_email = confirm_email
     self.email_token = email_token
+    self.reg_date = reg_date
     self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 # def is_admin(self):
@@ -339,6 +379,21 @@ def query_users():
 #         abort(403)
 
 
+
+def generate_confirmation_token(email):
+    return serializer.dumps(email, salt='security_password_salt')
+
+
+
+def confirm_token(token, expiration=3600):
+    try:
+        email = serializer.loads(token, salt='security_password_salt', max_age=expiration)
+    except:
+        return False
+    return email
+
+
+
 @app.route('/signup', methods=['GET','POST'])
 @prevent_login_signup
 def signup():
@@ -348,38 +403,40 @@ def signup():
         last_name = form.last_name.data
         username = form.username.data
         email = form.email.data
-        token = serializer.dumps(email, salt='email-confirm')
+        # token = serializer.dumps(email, salt='email-confirm')
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
         try:
+            token = generate_confirmation_token(email)
             new_user = User(first_name=first_name, last_name=last_name, username=username, email=email, access=200, email_token=token, confirm_email=False, password=password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
             # flash('Sign up successful')
-            link = url_for('Confirm email', token=token, external=True )
+            link = url_for('confirm_email', token=token, external=True )
             # msg.body('your link is {}'.format(link))
             html = render_template('activate.html', link=link)
-            msg = Message('Please confirm your email', sender='myname@eample.com', html=html, recipients=[email])
+            msg = Message('Please confirm your email', sender=app.config.get("MAIL_USERNAME"), html=html, recipients=[email])
+            # msg = Message('Please confirm your email', html=html, recipients=[email])
+            msg.body = "This is the email body"
             mail.send(msg)
             flash('A confirmation email has been sent via email.')
             return redirect(url_for("unconfirmed"))
             # return redirect(url_for('profile'))
         except IntegrityError:
             flash('Details already exists')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
     return render_template('register.html', form=form)
 
 
 
-@app.route('/confirmation-email/<token>')
+@app.route('/confirm/<token>')
 @prevent_login_signup
 def confirm_email(token):
     try:
-        email = serializer.loads(token, salt='email-confirm', max_age = 3600)
-    except SignatureExpired:
+        email = confirm_token(token)
+    except:
         flash('The confirmation link is invalid or has expired.')
-    emx = session.get('email')
-    user = User.query.filter_by(email=emx).first_or_404()
+    user = User.query.filter_by(email=email).first_or_404()
     if user.confirm_email:
         flash('Account already confirmed. Please login.')
     else:
@@ -387,7 +444,26 @@ def confirm_email(token):
         db.session.add(user)
         db.session.commit()
         flash('You have confirmed your account. Thanks!')
-    return redirect(url_for('profile'))
+    return redirect(url_for('login'))
+
+# @app.route('/confirmation-email/<token>')
+# @prevent_login_signup
+# def confirm_email(token):
+#     try:
+#         email = serializer.loads(token, salt='email-confirm', max_age = 3600)
+#     except SignatureExpired:
+#         flash('The confirmation link is invalid or has expired.')
+#     emx = session.get('email')
+#     user = User.query.filter_by(email=emx).first_or_404()
+#     if user.confirm_email:
+#         flash('Account already confirmed. Please login.')
+#         return redirect(url_for('login'))
+#     else:
+#         user.confirm_email = True
+#         db.session.add(user)
+#         db.session.commit()
+#         flash('You have confirmed your account. Thanks!')
+#     return redirect(url_for('profile'))
 
 
 
@@ -401,16 +477,20 @@ def unconfirmed():
     return render_template('unconfirmed.html')
     
 
-@app.route('/resend')
-def resend_confirmation():
-    email = g.user.email
-    token = serializer.dumps(email, salt='email-confirm')
-    link = url_for('confirm_email', token=token, _external=True)
-    html = render_template('activate.html', link=link)
-    msg = Message('Please confirm your email', sender='myname@eample.com', html=html, recipients=[email])
-    mail.send(msg)
-    flash('A new confirmation email has been sent.')
-    return redirect(url_for('unconfirmed'))
+# @app.route('/resend')
+# def resend_confirmation():
+#     email = g.user.email
+#     token = serializer.dumps(email, salt='email-confirm')
+#     user = User.query.filter_by(email = email).first()
+#     link = url_for('confirm_email', token=token, _external=True)
+#     html = render_template('activate.html', link=link)
+#     msg = Message('Please confirm your email', sender='jideoretade@gmail.com', html=html, recipients=[email])
+#     mail.send(msg)
+#     user.email_token = token
+#     db.session.add(user)
+#     db.session.commit()
+#     flash('A new confirmation email has been sent.')
+#     return redirect(url_for('unconfirmed'))
 
 
 @app.before_request
@@ -1441,6 +1521,8 @@ def main():
                                         password text NOT NULL,
                                         country string,
                                         access integer NOT NULL,
+                                        confirm_email boolean,
+                                        email_token text,
                                         reg_date text
                                     ); """
 
