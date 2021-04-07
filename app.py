@@ -164,7 +164,7 @@ class User(db.Model):
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # constructor
-def __init__(self,first_name, last_name, username, email, password, access=ACCESS['user']):
+def __init__(self,first_name, last_name, username, email, password, access=ACCESS['admin']):
     self.first_name=  first_name
     self.last_name = last_name
     self.username = username
@@ -335,7 +335,7 @@ def signup():
         email = form.email.data
         password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
         try:
-            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email,access=200, password=password)
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email,access=300, password=password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
