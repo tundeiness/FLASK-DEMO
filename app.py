@@ -163,14 +163,18 @@ class User(db.Model):
     access = db.Column(db.Integer, nullable=False, default=ACCESS['user'])
     reg_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-# constructor
-def __init__(self,first_name, last_name, username, email, password, access=ACCESS['admin']):
-    self.first_name=  first_name
-    self.last_name = last_name
-    self.username = username
-    self.email = email
-    self.access = access
-    self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+
+    def __repr__(self):
+            return '<User {}>'.format(self.username)    
+
+    # constructor
+    def __init__(self,first_name, last_name, username, email, password, access=ACCESS['admin']):
+        self.first_name=  first_name
+        self.last_name = last_name
+        self.username = username
+        self.email = email
+        self.access = access
+        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 # def is_admin(self):
 #         return self.access == ACCESS['admin']
