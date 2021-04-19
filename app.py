@@ -145,6 +145,7 @@ travel_permits_schema = TravelPermitSchema(many=True)
 
 
 ACCESS = {
+    'guest': 0,
     'user': 200,
     'admin': 300
 }
