@@ -118,15 +118,15 @@ class TravelPermit(db.Model):
     # db.Column(db.Enum(RestrictionType))
     # value = db.Column(Enum(RestrictionType))
 
-# constructor
-def __init__(self, home, destination, visa=RestrictionType.unknown.name, quarantine=RestrictionType.unknown.value):
-    self.home =  home
-    self.destination = destination
-    self.visa = visa
-    self.quarantine = quarantine
+    # constructor
+    def __init__(self, home, destination, visa=RestrictionType.unknown.name, quarantine=RestrictionType.unknown.value):
+        self.home =  home
+        self.destination = destination
+        self.visa = visa
+        self.quarantine = quarantine
 
-def __repr__(self):
-    return '<TravelPermit %r>' % self.location 
+    def __repr__(self):
+        return '<TravelPermit %r>' % self.location 
 
 
 # TravelPermit Schema
@@ -1344,6 +1344,47 @@ def update_permit(permit_id):
 #         conn.close()
 
 
+def check_database():
+    if database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+        print(True, flush=True)
+        return True
+    # print(res.get_cookie('country'), flush=True)
+
+
+check_database()
+
+
+def admin_user():
+    password = bcrypt.generate_password_hash(123456).decode('UTF-8')
+    try:
+        new_user = User(first_name="Johnny", last_name="Bravo", username="johnnybravo", email="johnny.bravo@example.com",access=300, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+    except IntegrityError:
+        flash('Details already exists')
+
+
+class DatabaseManager:
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.conn =  None 
+
+    def check_database(self):
+        try:
+            print(f'Checking if {self.db_name} exists or not...')
+            self.conn = sqlite3.connect(self.db_name, uri=True)
+            print(f'Database exists. Successfully connected to {self.db_name}')
+
+        except sqlite3.OpertionalError as err:
+            print('Database does not exist')
+            print(err)
+
+    def close_connection(self):
+        ''' close connection to database'''
+        if self.conn is not None:
+            self.conn.close()
+
+
 
 # CREATE TABLE IF NOT EXISTS projects (
 # 	id integer PRIMARY KEY,
@@ -1620,6 +1661,9 @@ def main():
 #         return redirect('/posts')
 #     except:
 #         return "error deleting post"
+
+
+
 
  
 @app.route('/static/js/brython.js')
