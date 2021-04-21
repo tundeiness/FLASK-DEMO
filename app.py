@@ -1364,25 +1364,25 @@ def admin_user():
         flash('Details already exists')
 
 
-class DatabaseManager:
-    def __init__(self, db_name):
-        self.db_name = db_name
-        self.conn =  None 
+# class DatabaseManager:
+#     def __init__(self, db_name):
+#         self.db_name = db_name
+#         self.conn =  None 
 
-    def check_database(self):
-        try:
-            print(f'Checking if {self.db_name} exists or not...')
-            self.conn = sqlite3.connect(self.db_name, uri=True)
-            print(f'Database exists. Successfully connected to {self.db_name}')
+#     def check_database(self):
+#         try:
+#             print(f'Checking if {self.db_name} exists or not...')
+#             self.conn = sqlite3.connect(self.db_name, uri=True)
+#             print(f'Database exists. Successfully connected to {self.db_name}')
 
-        except sqlite3.OpertionalError as err:
-            print('Database does not exist')
-            print(err)
+#         except sqlite3.OpertionalError as err:
+#             print('Database does not exist')
+#             print(err)
 
-    def close_connection(self):
-        ''' close connection to database'''
-        if self.conn is not None:
-            self.conn.close()
+#     def close_connection(self):
+#         ''' close connection to database'''
+#         if self.conn is not None:
+#             self.conn.close()
 
 
 
@@ -1396,19 +1396,21 @@ class DatabaseManager:
 # create connection and create DB
 
 def create_connection(tour_db):
-    """ create a database connection to the SQLite database
-        specified by tour_db
+    """ create a database connection to the SQLite database specified by tour_db
     :param db_file: database file
     :return: Connection object or None
     """
     conn = None
-    try:
-        conn = sqlite3.connect('tour.db')
-        return conn
-    except Error as e:
-        print(e)
+    if database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+        print(True, flush=True)
+    else:
+        try:
+            conn = sqlite3.connect('tour.db')
+            return conn
+        except Error as e:
+            print(e)
 
-    return conn
+        return conn
 
 
 def create_table(conn, create_table_sql):
@@ -1487,6 +1489,8 @@ def main():
         # create_table(conn, sql_create_traveller_table)
     else:
         print("Error! cannot create the database connection.")
+
+    admin_user()
 
 
 
