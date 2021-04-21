@@ -1344,25 +1344,24 @@ def update_permit(permit_id):
 #         conn.close()
 
 
-def check_database():
-    if database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
-        print(True, flush=True)
-        return True
-    # print(res.get_cookie('country'), flush=True)
+# def check_database():
+#     if database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+#         print(True, flush=True)
+#         return True
 
 
-check_database()
+# check_database()
 
 
 def admin_user():
+    user = User.query.filter_by(email = "johnny.bravo@example.com").first()
     password = bcrypt.generate_password_hash('123456').decode('UTF-8')
-    try:
-        new_user = User(first_name="Johnny", last_name="Bravo", username="johnnybravo", email="johnny.bravo@example.com",access=300, password=password)
+    if user is not None:
+        pass
+    else:
+        new_user = User(first_name="Johnny", last_name="Bravo", username="johnbravo", email="johnny.bravo@example.com",access=300, password=password)
         db.session.add(new_user)
         db.session.commit()
-    except IntegrityError:
-        flash('Details already exists')
-
 
 # class DatabaseManager:
 #     def __init__(self, db_name):
