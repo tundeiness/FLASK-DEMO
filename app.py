@@ -1355,7 +1355,7 @@ check_database()
 
 
 def admin_user():
-    password = bcrypt.generate_password_hash(123456).decode('UTF-8')
+    password = bcrypt.generate_password_hash('123456').decode('UTF-8')
     try:
         new_user = User(first_name="Johnny", last_name="Bravo", username="johnnybravo", email="johnny.bravo@example.com",access=300, password=password)
         db.session.add(new_user)
