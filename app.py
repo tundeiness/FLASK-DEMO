@@ -349,7 +349,7 @@ def signup():
         except IntegrityError:
             db.session.rollback()
             flash('Details already exists')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
     return render_template('register.html', form=form)
 
 
