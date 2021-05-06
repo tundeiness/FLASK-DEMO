@@ -169,7 +169,7 @@ class User(db.Model):
             return '<User {}>'.format(self.username)    
 
     # constructor
-    def __init__(self,first_name, last_name, username, email, password, access=ACCESS['admin']):
+    def __init__(self,first_name, last_name, username, email, password, access=ACCESS['user']):
         self.first_name=  first_name
         self.last_name = last_name
         self.username = username
