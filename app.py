@@ -127,7 +127,7 @@ class TravelPermit(db.Model):
         self.quarantine = quarantine
 
     def __repr__(self):
-        return '<TravelPermit %r>' % self.location 
+        return '<TravelPermit %r>' % self.destination 
 
 
 # TravelPermit Schema
@@ -1070,7 +1070,7 @@ def all_permits():
 @app.route('/travel-permits/new', methods=["GET", "POST"])
 @check_admin
 def new_permit():
-    check_admin()
+    # check_admin()
     form = TravelPermitForm(request.form)
     all_permits = TravelPermit.query.all()
     if request.method == 'POST':
@@ -1083,7 +1083,8 @@ def new_permit():
         db.session.add(new_travel_permit)
         db.session.commit()
         flash("New permit successfully created and added")
-        return redirect(url_for('profile'))
+        # return redirect(url_for('profile'))
+        return redirect(url_for('all_permits'))
     return render_template('create_permit.html', title='New Permit', form=form)
 
 
