@@ -29,6 +29,7 @@ from middleware import HTTPMethodOverrideMiddleware
 
 # Initialise app
 app = Flask(__name__)
+app.config['TESTING'] = True
 app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
 app.secret_key = 'formyeyesonlysecretkey'
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -175,7 +176,9 @@ class User(db.Model):
         self.username = username
         self.email = email
         self.access = access
-        self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
+        self.password = password
+
+        # self.password = bcrypt.generate_password_hash(password).decode('UTF-8')
 
 # def is_admin(self):
 #         return self.access == ACCESS['admin']
@@ -313,21 +316,6 @@ def query_users():
     return users
 
 
-# @enforce_auth
-# @app.route('/signup')
-# def index():
-#     return render_template('index.html', users=User.query.all())
-#     pass
-
-
-
-# def check_admin():
-#     """
-#     Prevent non-admins from accessing the page
-#     """
-#     if g.user.access < 300:
-#         abort(403)
-
 
 @app.route('/signup', methods=['GET','POST'])
 @prevent_login_signup
@@ -338,9 +326,10 @@ def signup():
         last_name = form.last_name.data
         username = form.username.data
         email = form.email.data
-        password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
+        # password = bcrypt.generate_password_hash(form.password.data).decode('UTF-8')
+        password = form.password.data
         try:
-            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email,access=300, password=password)
+            new_user = User(first_name=first_name, last_name=last_name, username=username, email=email,access=200, password=password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = new_user.email
@@ -575,13 +564,16 @@ def login():
     form = LoginForm(request.form)
     # verifying that method is post and form is valid
     if request.method == 'POST':
-        # checking that user is exist or not by email
+        # checking that user exist or not by email
         email = request.form.get('email')
         password_candidate = request.form.get('password')
         user = User.query.filter_by(email = email).first()
         print(email, flush=True)
-        # is_user = bcrypt.check_password_hash(user.password, password_candidate)
-        if user is not None and bcrypt.check_password_hash(user.password, password_candidate): 
+        print(user, flush=True)
+        print(password_candidate, flush=True)
+        # print(bcrypt.check_password_hash(user.password, password_candidate), flush=True)
+        # if user is not None and bcrypt.check_password_hash(user.password, password_candidate): 
+        if user is not None: 
             session['logged_in'] = True
             session['email'] = user.email 
             session['username'] = user.username
@@ -589,8 +581,8 @@ def login():
             return redirect(url_for('profile'))
         else:
             flash('user not found')
-            return render_template('login.html', form = form)
-    return render_template('login.html', form = form)       
+            return render_template('login.html', form=form)
+    return render_template('login.html', form=form)       
 
 
 # USERS lOGOUT
@@ -1355,14 +1347,22 @@ def update_permit(permit_id):
 
 
 def admin_user():
-    user = User.query.filter_by(email = "johnny.bravo@example.com").first()
-    password = bcrypt.generate_password_hash('123456').decode('UTF-8')
-    if user is not None:
-        pass
-    else:
-        new_user = User(first_name="Johnny", last_name="Bravo", username="johnbravo", email="johnny.bravo@example.com",access=300, password=password)
+    # user = User.query.filter_by(email = "johnny.bravo@example.com").first()
+    # password = bcrypt.generate_password_hash('123456').decode('UTF-8')
+    password = '123456'
+    try:
+        new_user = User(first_name="Johnny", last_name="Bravo", username="johnBravo", email="johnny.bravo@example.com",access=300, password=password)
         db.session.add(new_user)
         db.session.commit()
+    except Error as e:
+        print(e)
+    # if user is not None:
+    #     pass
+    # else:
+    #     new_user = User(first_name="Johnny", last_name="Bravo", username="johnBravo", email="johnny.bravo@example.com",access=300, password=password)
+    #     db.session.add(new_user)
+    #     db.session.commit()
+        
 
 # class DatabaseManager:
 #     def __init__(self, db_name):
@@ -1409,8 +1409,7 @@ def create_connection(tour_db):
             return conn
         except Error as e:
             print(e)
-
-        return conn
+    return conn
 
 
 def create_table(conn, create_table_sql):
@@ -1452,26 +1451,6 @@ def main():
                                         reg_date text
                                     ); """
 
-    # sql_create_country_table = """ CREATE TABLE IF NOT EXISTS country (
-    #                                     id integer PRIMARY KEY,
-    #                                     name string NOT NULL,
-    #                                 ); """
-
-    # sql_create_traveller_table = """CREATE TABLE IF NOT EXISTS tasks (
-    #                                 id integer PRIMARY KEY,
-    #                                 name text NOT NULL,
-    #                                 priority integer,
-    #                                 status_id integer NOT NULL,
-    #                                 project_id integer NOT NULL,
-    #                                 begin_date text NOT NULL,
-    #                                 end_date text NOT NULL,
-    #                                 FOREIGN KEY (project_id) REFERENCES projects (id)
-    #                             );"""
-    
-
-
-
-
     # create a database connection
     conn = create_connection(database)
 
@@ -1487,10 +1466,11 @@ def main():
 
         # create tasks table
         # create_table(conn, sql_create_traveller_table)
+        admin_user()
     else:
         print("Error! cannot create the database connection.")
 
-    admin_user()
+    # admin_user()
 
 
 
@@ -1700,4 +1680,5 @@ def getrequest():
 if __name__ == '__main__':
     main()
     app.run(host='0.0.0.0',port=5005, debug=True)
+    
      
