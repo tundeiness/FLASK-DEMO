@@ -1143,34 +1143,10 @@ def delete_permit(permit_id):
         # db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
         # db.commit()
         flash('Permit Deleted')
-        # return redirect(url_for('profile'))
         return redirect(url_for('all_permits'))
     except:
         return 'There is a problem deleting that'
 
-    
-#     # check_admin()
-#     permit = TravelPermit.query.get_or_404(permit_id)
-#     if g.user.access < 300:
-#         abort(403)
-#     if request.method == 'DELETE':
-#         db = get_db()
-#         db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
-#         db.session.commit()
-#         flash('Permit Deleted')
-
-#     return redirect(url_for('all_permits')
-
-
-
-
-    # elif request.method == 'GET':
-        # populate the dropdowns
-    #     form.home.data = permit.home
-    #     form.destination.data = permit.destination
-    #     form.visa.data = permit.visa
-    #     form.quarantine.data = permit.quarantine
-    # return render_template('create_permit.html', title='Update Permit', form=form)
 
 
 # GET ALL PERMITS
@@ -1274,16 +1250,6 @@ def delete_permit(permit_id):
         # conn.commit()
         # conn.close()
 
-
-
-
-
-# Get Single permit
-
-# @app.route('/travel-permit/<id_>', methods=['GET'])
-# def get_travel_permit(id_):
-#     travel_permit = TravelPermit.query.get_or_404(id_)
-#     return travel_permit_schema.jsonify(travel_permit)
 
 
 # Update a Permit
