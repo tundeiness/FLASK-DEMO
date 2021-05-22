@@ -14,6 +14,7 @@ from sqlite3 import Error
 import json
 # from flask_modus import Modus
 from flask_bcrypt import Bcrypt
+# from flaskr.db import get_db
 from wtforms import StringField, TextAreaField, PasswordField, BooleanField, validators, SelectField, SubmitField
 from sqlalchemy.exc import IntegrityError
 from application.decorators import enforce_auth, prevent_login_signup, enforce_correct_user, check_admin
@@ -1092,8 +1093,9 @@ def new_permit():
 #single permit
 @app.route('/travel-permits/<int:permit_id>', methods=["GET", "POST"])
 # a decorator to check if user is admin
+@check_admin
 def permit(permit_id):
-    check_admin()
+    # check_admin()
     permit = TravelPermit.query.get_or_404(permit_id)
     return render_template("permit.html",user=get_curr_user(), permit=permit)
 
@@ -1122,6 +1124,56 @@ def update_permit(permit_id):
         form.visa.data = permit.visa
         form.quarantine.data = permit.quarantine
     return render_template('create_permit.html', title='Update Permit', form=form)
+
+
+
+
+
+#DELETE permit
+@app.route('/travel-permits/delete/<int:permit_id>', methods=["DELETE"])
+@check_admin
+def delete_permit(permit_id):
+    if g.user.access < 300:
+        abort(403)
+
+    if request.method == 'DELETE':
+        # db = get_db()
+        permit_to_delete = TravelPermit.query.get_or_404(permit_id)
+
+        try:
+            db.session.delete(permit_to_delete)
+            db.session.commit()
+            # db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
+            # db.session.commit()
+            flash('Permit Deleted')
+            return redirect(url_for('all_permits'))
+        except:
+            return 'There is a problem deleteing that'
+
+    
+#     # check_admin()
+#     permit = TravelPermit.query.get_or_404(permit_id)
+#     if g.user.access < 300:
+#         abort(403)
+#     if request.method == 'DELETE':
+#         db = get_db()
+#         db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
+#         db.session.commit()
+#         flash('Permit Deleted')
+
+#     return redirect(url_for('all_permits')
+
+
+
+
+    # elif request.method == 'GET':
+        # populate the dropdowns
+    #     form.home.data = permit.home
+    #     form.destination.data = permit.destination
+    #     form.visa.data = permit.visa
+    #     form.quarantine.data = permit.quarantine
+    # return render_template('create_permit.html', title='Update Permit', form=form)
+
 
 # GET ALL PERMITS
 # @app.route('/travel-permit', methods=['GET'])
@@ -1344,9 +1396,6 @@ def update_permit(permit_id):
 #         return True
 
 
-# check_database()
-
-
 def admin_user():
     # user = User.query.filter_by(email = "johnny.bravo@example.com").first()
     # password = bcrypt.generate_password_hash('123456').decode('UTF-8')
@@ -1357,13 +1406,6 @@ def admin_user():
         db.session.commit()
     except Error as e:
         print(e)
-    # if user is not None:
-    #     pass
-    # else:
-    #     new_user = User(first_name="Johnny", last_name="Bravo", username="johnBravo", email="johnny.bravo@example.com",access=300, password=password)
-    #     db.session.add(new_user)
-    #     db.session.commit()
-        
 
 # class DatabaseManager:
 #     def __init__(self, db_name):
