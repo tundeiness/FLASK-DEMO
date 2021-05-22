@@ -22,6 +22,7 @@
                                         <td>{{ permit.visa.value }}</td>
                                         <td>{{ permit.quarantine.value }}</td>
                                         {%if user.access == 300 %}
+                                            <!-- <td><a href="{{url_for('delete_permit', permit_id = permit.id)}}">Delete</a></td> -->
                                             <td><a href="{{url_for('delete_permit', permit_id = permit.id)}}">Delete</a></td>
                                             <td><a href="{{url_for('update_permit', permit_id = permit.id)}}">Update</a></td>
                                         {%endif%}
