@@ -41,6 +41,11 @@
                         <div>
                             <a href="{{url_for('profile')}}">Home</a>
                         </div>
+                        {%if user.access == 300 %}
+                            <div>
+                                <a href="{{url_for('new_permit')}}">Add New Permit</a>
+                            </div>
+                        {%endif%}
                 </div>
             </div>
         </div>

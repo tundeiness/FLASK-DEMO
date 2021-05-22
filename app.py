@@ -1136,21 +1136,17 @@ def delete_permit(permit_id):
     if g.user.access < 300:
         abort(403)
 
-    # if request.method == 'DELETE':
-        # db = get_db()
     permit_to_delete = TravelPermit.query.get_or_404(permit_id)
-
     try:
         db.session.delete(permit_to_delete)
         db.session.commit()
         # db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
         # db.commit()
-        # db.session.commit()
         flash('Permit Deleted')
-        return redirect(url_for('profile'))
-        # return redirect(url_for('all_permits'))
+        # return redirect(url_for('profile'))
+        return redirect(url_for('all_permits'))
     except:
-        return 'There is a problem deleteing that'
+        return 'There is a problem deleting that'
 
     
 #     # check_admin()
