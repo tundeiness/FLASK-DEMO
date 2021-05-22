@@ -1091,13 +1091,13 @@ def new_permit():
 
 
 #single permit
-@app.route('/travel-permits/<int:permit_id>', methods=["GET", "POST"])
+# @app.route('/travel-permits/<int:permit_id>', methods=["GET", "POST"])
 # a decorator to check if user is admin
-@check_admin
-def permit(permit_id):
-    # check_admin()
-    permit = TravelPermit.query.get_or_404(permit_id)
-    return render_template("permit.html",user=get_curr_user(), permit=permit)
+# @check_admin
+# def permit(permit_id):
+#     # check_admin()
+#     permit = TravelPermit.query.get_or_404(permit_id)
+#     return render_template("permit.html",user=get_curr_user(), permit=permit)
 
 
 #update permit
@@ -1130,25 +1130,27 @@ def update_permit(permit_id):
 
 
 #DELETE permit
-@app.route('/travel-permits/delete/<int:permit_id>', methods=["DELETE"])
+@app.route('/travel_permits/<int:permit_id>/delete', methods=["POST"])
 @check_admin
 def delete_permit(permit_id):
     if g.user.access < 300:
         abort(403)
 
-    if request.method == 'DELETE':
+    # if request.method == 'DELETE':
         # db = get_db()
-        permit_to_delete = TravelPermit.query.get_or_404(permit_id)
+    permit_to_delete = TravelPermit.query.get_or_404(permit_id)
 
-        try:
-            db.session.delete(permit_to_delete)
-            db.session.commit()
-            # db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
-            # db.session.commit()
-            flash('Permit Deleted')
-            return redirect(url_for('all_permits'))
-        except:
-            return 'There is a problem deleteing that'
+    try:
+        db.session.delete(permit_to_delete)
+        db.session.commit()
+        # db.execute('DELETE FROM travel_permit WHERE id = ?', (permit_id,))
+        # db.commit()
+        # db.session.commit()
+        flash('Permit Deleted')
+        return redirect(url_for('profile'))
+        # return redirect(url_for('all_permits'))
+    except:
+        return 'There is a problem deleteing that'
 
     
 #     # check_admin()

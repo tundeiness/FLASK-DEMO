@@ -18,6 +18,9 @@
                                     <div>
                                         <a href="{{url_for('update_permit', permit_id = permit.id)}}">Update</a>
                                     </div>
+                                    <div>
+                                        <a href="{{url_for('profile')}}">Home</a>
+                                    </div>
                                 {%endif%}
                                 <tr><td>{{permit.id}}</td><td>{{ permit.home }}</td><td>{{ permit.destination }}</td><td>{{ permit.visa }}</td><td>{{ permit.quarantine }}</td></tr>  
                             </tbody>
